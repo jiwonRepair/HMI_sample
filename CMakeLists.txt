@@ -44,6 +44,7 @@ qt_add_qml_module(apptest4
         SOURCES hardwarestatusmodel.h hardwarestatusmodel.cpp
         QML_FILES HWstatus.qml
         SOURCES wifimonitor.h wifimonitor.cpp
+        SOURCES uitest.h uitest.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -57,8 +58,8 @@ set_target_properties(apptest4 PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Charts)
-
+#find_package(Qt6 REQUIRED COMPONENTS Quick Charts)
+find_package(Qt6 REQUIRED COMPONENTS Core Test)
 
 target_link_libraries(
     apptest4
@@ -66,6 +67,7 @@ target_link_libraries(
     setupapi
     Bthprops
     Wlanapi
+    Qt6::Test
     #Qt6::Charts
     #Qt6::qtchartsqml2  # ✅ Qt6Charts 추가
 )
