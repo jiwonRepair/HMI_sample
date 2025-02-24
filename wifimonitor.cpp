@@ -41,6 +41,7 @@ void WifiMonitor::updateSignalStrength() {
                 m_signalStrength = (int)pBssList->wlanBssEntries[0].lRssi;
                 m_signalStrength = (m_signalStrength + 100) * 2;  // dBm → 0~100 변환
                 emit signalStrengthChanged();
+                qDebug("m_signalStrength : %d", m_signalStrength);
             }
             WlanFreeMemory(pBssList);
         }

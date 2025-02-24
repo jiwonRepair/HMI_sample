@@ -44,7 +44,7 @@ ApplicationWindow {
             Text {
                 text: "System Monitor"
                 color: "#fff"
-                font.pixelSize: 18
+                font.pixelSize: 15
                 anchors.left: parent.left
                 anchors.leftMargin: 20
                 anchors.verticalCenter: parent.verticalCenter
@@ -94,6 +94,17 @@ ApplicationWindow {
                 anchors.verticalCenter: parent.verticalCenter
                 value: diskMonitor ? diskMonitor.diskUsage : 0  // ✅ NULL 체크 추가
                 //onValueChanged: console.log("[DiskGauge] 배터리 값 변경됨:", value)
+            }
+
+            // 🔥 배터리 게이지 추가 (CPU 게이지 오른쪽)
+            WifiGauge {
+                id: wifiGauge
+                width: 100
+                height: 310
+                anchors.right: parent.right  // 🔥 상단바 오른쪽 끝에 배치
+                anchors.rightMargin: 410
+                anchors.verticalCenter: parent.verticalCenter
+                value: wifiMonitor ? wifiMonitor.wifiGauge : 0  // ✅ NULL 체크 추가
             }
 
 

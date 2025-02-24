@@ -2,7 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 
 Item {
-    property real value: diskMonitor.diskGauge  // CPU 사용률
+    property real value: diskMonitor.diskUsage  // disk 사용률
 
     property var thresholds: [
         { threshold: 50, color: "#e74c3c" },  // 빨간색 (위험)

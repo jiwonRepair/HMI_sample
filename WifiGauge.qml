@@ -2,12 +2,12 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 
 Item {
-    property real value: cpuMonitor.cpuUsage  // CPU 사용률
+    property real value: wifiMonitor.signalStrength  // wifi 신호강도
 
     property var thresholds: [
-        { threshold: 70, color: "#e74c3c" },  // 빨간색 (위험)
-        { threshold: 40, color: "#f1c40f" },  // 노란색 (주의)
-        { threshold: 0, color: "#2ecc71" }   // 초록색 (안전)
+        { threshold: 0, color: "#e74c3c" },  // 빨간색 (위험)
+        { threshold: 30, color: "#f1c40f" },  // 노란색 (주의)
+        { threshold: 100, color: "#2ecc71" }   // 초록색 (안전)
     ]
 
     // ✅ 원본을 변경하지 않고 정렬한 후 가장 적절한 색상을 찾음
@@ -49,32 +49,32 @@ Item {
             ctx.strokeStyle = gaugeColor  // CPU 사용률 강조
             ctx.stroke()
 
-            // 중앙 텍스트 (CPU 사용률 %)
+            // 중앙 텍스트 (wifi 신호강도 %)
             ctx.font = "bold 14px sans-serif"
             ctx.fillStyle = "white"//"#333"
             ctx.textAlign = "center"
             ctx.textBaseline = "middle"
-            ctx.fillText(value.toFixed(1) + "%", centerX, centerY - 10)
+            ctx.fillText(value.toFixed(1), centerX, centerY - 10)
 
-            // 추가된 텍스트 (CPU Usage)
+            // 추가된 텍스트 (wifi 신호강도)
             ctx.font = "12px sans-serif"
             ctx.fillStyle = "white"//"#555"
-            ctx.fillText("CPU", centerX, centerY + 12)
+            ctx.fillText("WIFI", centerX, centerY + 12)
         }
     }
 
     // 🔥 QML에서 CPU 사용률이 변경될 때 강제 업데이트
     Connections {
-        target: cpuMonitor
-        function onCpuUsageChanged() {
-            //console.log("[QML] CPU Usage Updated:", cpuMonitor.cpuUsage);
-            cpuGauge.value = cpuMonitor.cpuUsage;  // 강제 업데이트
+        target: wifiMonitor
+        function onSignalStrengthChanged() {
+            //console.log("[QML] CPU Usage Updated:", wifiMonitor.wifiGauge);
+            wifiGauge.value = wifiMonitor.signalStrength;  // 강제 업데이트
 
             // 🔥 canvas가 존재하는 경우에만 requestPaint 실행
-            if (cpuGauge.canvas) {
-                cpuGauge.canvas.requestPaint();
+            if (wifiGauge.canvas) {
+                wifiGauge.canvas.requestPaint();
             } else {
-                console.warn("[QML] cpuGauge.canvas is undefined!");
+                console.warn("[QML] wifiGauge.canvas is undefined!");
             }
         }
     }

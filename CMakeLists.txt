@@ -29,7 +29,7 @@ qt_add_qml_module(apptest4
         Main.qml
         QML_FILES CpuGauge.qml
         QML_FILES
-        QML_FILES Page2.qml
+        QML_FILES WifiGauge.qml
         QML_FILES Page3.qml
         QML_FILES Page4.qml
         QML_FILES Page5.qml
@@ -45,6 +45,8 @@ qt_add_qml_module(apptest4
         QML_FILES HWstatus.qml
         SOURCES wifimonitor.h wifimonitor.cpp
         SOURCES uitest.h uitest.cpp
+        QML_FILES graph.qml
+        QML_FILES Page2.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -68,8 +70,6 @@ target_link_libraries(
     Bthprops
     Wlanapi
     Qt6::Test
-    #Qt6::Charts
-    #Qt6::qtchartsqml2  # ✅ Qt6Charts 추가
 )
 
 include(GNUInstallDirs)
