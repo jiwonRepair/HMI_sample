@@ -64,8 +64,8 @@ ApplicationWindow {
                 height: 100
                 anchors.right: parent.right
                 anchors.rightMargin: 10
-                anchors.verticalCenter: parent.verticalCenter
-                value: cpuMonitor.cpuUsage ? cpuMonitor.cpuUsage : 0// 🔥 CPU 사용률 반영
+                anchors.verticalCenter: parent.verticalCenter                
+                value: (cpuMonitor && cpuMonitor.cpuUsage) ? cpuMonitor.cpuUsage : 0  // ✅ NULL 체크 추가
             }
 
             // 🔥 CPU 게이지 추가 (상단바 오른쪽)
@@ -76,7 +76,8 @@ ApplicationWindow {
                 anchors.right: parent.right
                 anchors.rightMargin: 110
                 anchors.verticalCenter: parent.verticalCenter
-                value: memoryMonitor.memoryUsage ? memoryMonitor.memoryUsage : 0// 🔥 CPU 사용률 반영
+                value: (memoryMonitor && memoryMonitor.memoryUsage) ? memoryMonitor.memoryUsage : 0// 🔥 CPU 사용률 반영
+
             }
 
             // 🔥 배터리 게이지 추가 (CPU 게이지 오른쪽)
@@ -87,8 +88,7 @@ ApplicationWindow {
                 anchors.right: parent.right  // 🔥 상단바 오른쪽 끝에 배치
                 anchors.rightMargin: 210
                 anchors.verticalCenter: parent.verticalCenter
-                value: batteryMonitor ? batteryMonitor.batteryLevel : 0  // ✅ NULL 체크 추가
-                //onValueChanged: console.log("[BatteryGauge] 배터리 값 변경됨:", value)
+                value: (batteryMonitor && batteryMonitor.batteryLevel) ? batteryMonitor.batteryLevel : 0  // ✅ NULL 체크 추가
             }
 
             // 🔥 배터리 게이지 추가 (CPU 게이지 오른쪽)
@@ -99,8 +99,7 @@ ApplicationWindow {
                 anchors.right: parent.right  // 🔥 상단바 오른쪽 끝에 배치
                 anchors.rightMargin: 310
                 anchors.verticalCenter: parent.verticalCenter
-                value: diskMonitor ? diskMonitor.diskUsage : 0  // ✅ NULL 체크 추가
-                //onValueChanged: console.log("[DiskGauge] 배터리 값 변경됨:", value)
+                value: (diskMonitor && diskMonitor.diskUsage) ? diskMonitor.diskUsage : 0  // ✅ NULL 체크 추가
             }
 
             // 🔥 배터리 게이지 추가 (CPU 게이지 오른쪽)
@@ -111,7 +110,7 @@ ApplicationWindow {
                 anchors.right: parent.right  // 🔥 상단바 오른쪽 끝에 배치
                 anchors.rightMargin: 410
                 anchors.verticalCenter: parent.verticalCenter
-                value: wifiMonitor ? wifiMonitor.wifiGauge : 0  // ✅ NULL 체크 추가
+                value: (wifiMonitor && wifiMonitor.signalStrength) ? wifiMonitor.signalStrength : 0  // ✅ NULL 체크 추가
             }
 
 
