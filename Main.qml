@@ -24,12 +24,19 @@ ApplicationWindow {
                 anchors.margins: 10
                 spacing: 10
 
-                Button { text: "H/W status"; width: parent.width; onClicked: pageManager.showPage("hwstatus") }
-                Button { text: "Page 2"; width: parent.width; onClicked: pageManager.showPage("page2") }
-                Button { text: "Page 3"; width: parent.width; onClicked: pageManager.showPage("page3") }
-                Button { text: "Page 4"; width: parent.width; onClicked: pageManager.showPage("page4") }
-                Button { text: "Page 5"; width: parent.width; onClicked: pageManager.showPage("page5") }
+                Button {
+                    id: hwStatusButton; objectName: "hwStatusButton"; text: "H/W status"; width: parent.width;
+                    onClicked: {
+                        pageManager.showPage("hwstatus")
+                        console.log("H/W Status Button clicked");
+                    }
+                }
+                Button { id: page2Button; objectName: "page2Button"; text: "Page 2"; width: parent.width; onClicked: pageManager.showPage("page2") }
+                Button { id: page3Button; objectName: "page3Button"; text: "Page 3"; width: parent.width; onClicked: pageManager.showPage("page3") }
+                Button { id: page4Button; objectName: "page4Button"; text: "Page 4"; width: parent.width; onClicked: pageManager.showPage("page4") }
+                Button { id: page5Button; objectName: "page5Button"; text: "Page 5"; width: parent.width; onClicked: pageManager.showPage("page5") }
             }
+
         }
 
         // 🔥 사이드바 오른쪽에 위치하는 상단바
@@ -58,7 +65,7 @@ ApplicationWindow {
                 anchors.right: parent.right
                 anchors.rightMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
-                value: cpuMonitor.cpuUsage // 🔥 CPU 사용률 반영
+                value: cpuMonitor.cpuUsage ? cpuMonitor.cpuUsage : 0// 🔥 CPU 사용률 반영
             }
 
             // 🔥 CPU 게이지 추가 (상단바 오른쪽)
@@ -69,7 +76,7 @@ ApplicationWindow {
                 anchors.right: parent.right
                 anchors.rightMargin: 110
                 anchors.verticalCenter: parent.verticalCenter
-                value: memoryMonitor.memoryUsage // 🔥 CPU 사용률 반영
+                value: memoryMonitor.memoryUsage ? memoryMonitor.memoryUsage : 0// 🔥 CPU 사용률 반영
             }
 
             // 🔥 배터리 게이지 추가 (CPU 게이지 오른쪽)

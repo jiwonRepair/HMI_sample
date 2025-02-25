@@ -9,7 +9,6 @@
 #include "hardwarestatusmodel.h"
 #include "wifimonitor.h"
 
-
 //#include "main.moc"
 
 
