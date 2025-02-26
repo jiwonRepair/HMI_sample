@@ -5,6 +5,7 @@ ApplicationWindow {
     visible: true
     width: 800
     height: 480
+    objectName: "mainWindow"  // ✅ C++에서 찾기 쉽게 설정
 
     Rectangle {
         width: parent.width
@@ -25,7 +26,10 @@ ApplicationWindow {
                 spacing: 10
 
                 Button {
-                    id: hwStatusButton; objectName: "hwStatusButton"; text: "H/W status"; width: parent.width;
+                    id: hwStatusButton
+                    objectName: "hwStatusButton"
+                    text: "H/W status"
+                    width: parent.width
                     onClicked: {
                         pageManager.showPage("hwstatus")
                         console.log("H/W Status Button clicked");
@@ -36,16 +40,15 @@ ApplicationWindow {
                 Button { id: page4Button; objectName: "page4Button"; text: "Page 4"; width: parent.width; onClicked: pageManager.showPage("page4") }
                 Button { id: page5Button; objectName: "page5Button"; text: "Page 5"; width: parent.width; onClicked: pageManager.showPage("page5") }
             }
-
         }
 
-        // 🔥 사이드바 오른쪽에 위치하는 상단바
+        // 🔥 상단바
         Rectangle {
             id: topBar
-            width: parent.width - sidebar.width  // 🔥 사이드바 오른쪽 영역만큼 차지
+            width: parent.width - sidebar.width
             height: 120
             color: "#222"
-            anchors.left: sidebar.right  // 🔥 사이드바 오른쪽에 배치
+            anchors.left: sidebar.right
             anchors.top: parent.top
 
             Text {
@@ -57,18 +60,16 @@ ApplicationWindow {
                 anchors.verticalCenter: parent.verticalCenter
             }
 
-            // 🔥 CPU 게이지 추가 (상단바 오른쪽)
             CpuGauge {
                 id: cpuGauge
                 width: 100
                 height: 100
                 anchors.right: parent.right
                 anchors.rightMargin: 10
-                anchors.verticalCenter: parent.verticalCenter                
-                value: (cpuMonitor && cpuMonitor.cpuUsage) ? cpuMonitor.cpuUsage : 0  // ✅ NULL 체크 추가
+                anchors.verticalCenter: parent.verticalCenter
+                value: (cpuMonitor && cpuMonitor.cpuUsage) ? cpuMonitor.cpuUsage : 0
             }
 
-            // 🔥 CPU 게이지 추가 (상단바 오른쪽)
             MemoryGauge {
                 id: memGauge
                 width: 100
@@ -76,67 +77,61 @@ ApplicationWindow {
                 anchors.right: parent.right
                 anchors.rightMargin: 110
                 anchors.verticalCenter: parent.verticalCenter
-                value: (memoryMonitor && memoryMonitor.memoryUsage) ? memoryMonitor.memoryUsage : 0// 🔥 CPU 사용률 반영
-
+                value: (memoryMonitor && memoryMonitor.memoryUsage) ? memoryMonitor.memoryUsage : 0
             }
 
-            // 🔥 배터리 게이지 추가 (CPU 게이지 오른쪽)
             BatteryGauge {
                 id: batteryGauge
                 width: 100
                 height: 100
-                anchors.right: parent.right  // 🔥 상단바 오른쪽 끝에 배치
+                anchors.right: parent.right
                 anchors.rightMargin: 210
                 anchors.verticalCenter: parent.verticalCenter
-                value: (batteryMonitor && batteryMonitor.batteryLevel) ? batteryMonitor.batteryLevel : 0  // ✅ NULL 체크 추가
+                value: (batteryMonitor && batteryMonitor.batteryLevel) ? batteryMonitor.batteryLevel : 0
             }
 
-            // 🔥 배터리 게이지 추가 (CPU 게이지 오른쪽)
             DiskGauge {
                 id: diskGauge
                 width: 100
                 height: 310
-                anchors.right: parent.right  // 🔥 상단바 오른쪽 끝에 배치
+                anchors.right: parent.right
                 anchors.rightMargin: 310
                 anchors.verticalCenter: parent.verticalCenter
-                value: (diskMonitor && diskMonitor.diskUsage) ? diskMonitor.diskUsage : 0  // ✅ NULL 체크 추가
+                value: (diskMonitor && diskMonitor.diskUsage) ? diskMonitor.diskUsage : 0
             }
 
-            // 🔥 배터리 게이지 추가 (CPU 게이지 오른쪽)
             WifiGauge {
                 id: wifiGauge
                 width: 100
                 height: 310
-                anchors.right: parent.right  // 🔥 상단바 오른쪽 끝에 배치
+                anchors.right: parent.right
                 anchors.rightMargin: 410
                 anchors.verticalCenter: parent.verticalCenter
-                value: (wifiMonitor && wifiMonitor.signalStrength) ? wifiMonitor.signalStrength : 0  // ✅ NULL 체크 추가
+                value: (wifiMonitor && wifiMonitor.signalStrength) ? wifiMonitor.signalStrength : 0
             }
-
-
         }
 
-        // 🔥 메인 콘텐츠 영역 (상단바 아래에 배치)
+        // 🔥 메인 콘텐츠 영역
         Rectangle {
             id: contentArea
             width: parent.width - sidebar.width
             height: parent.height - topBar.height
             anchors.left: sidebar.right
-            anchors.top: topBar.bottom  // 🔥 상단바 아래로 배치
+            anchors.top: topBar.bottom
             color: "#f5f5f5"
 
-            HWstatus { id: hwstatus; visible: true }
-            Page2 { id: page2; visible: false }
-            Page3 { id: page3; visible: false }
-            Page4 { id: page4; visible: false }
-            Page5 { id: page5; visible: false }
+            HWstatus { id: hwstatus; objectName: "hwstatus"; visible: true }
+            Page2 { id: page2; objectName: "page2"; visible: false }
+            Page3 { id: page3; objectName: "page3"; visible: false }
+            Page4 { id: page4; objectName: "page4"; visible: false }
+            Page5 { id: page5; objectName: "page5"; visible: false }
         }
 
-        // C++ `pageManager.pageChanged` 신호를 감지하여 페이지 변경
+        // C++ `pageManager.pageChanged` 신호 감지
         Connections {
             target: pageManager
             function onPageChanged(pageName) {
-                console.log("Changing page to:", pageName); // 디버깅용 로그
+                console.log("Changing page to:", pageName);
                 hwstatus.visible = (pageName === "hwstatus");
                 page2.visible = (pageName === "page2");
                 page3.visible = (pageName === "page3");

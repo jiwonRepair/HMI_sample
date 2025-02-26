@@ -42,6 +42,7 @@ qt_add_qml_module(apptest4
     URI test4
     VERSION 1.0
     QML_FILES ${QML_FILES}
+    QML_FILES
 )
 
 # ✅ Qt 라이브러리 링크 추가

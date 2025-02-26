@@ -2,19 +2,24 @@
 #define UITEST_H
 
 #include <QtTest/QtTest>
+#include <QQmlApplicationEngine>
 #include <QtQuick/QQuickView>
 #include <QtQuick/QQuickItem>
-#include <QSignalSpy>
 
 class QmlTest : public QObject
 {
     Q_OBJECT
 
-private slots:
-    void testButtonClick();  // ✅ 함수 선언 (정의 X)
-
 private:
-    QQuickView view;
+    QQmlApplicationEngine engine;
+    QObject *rootObject = nullptr;
+    QObject *pageManager = nullptr;
+
+    void setUp(); // ✅ QML 및 객체 초기화 함수
+
+private slots:
+    //void testButtonClick();     // ✅ 버튼 클릭 테스트
+    void testPageNavigation();  // ✅ 페이지 전환 테스트
 };
 
 #endif // UITEST_H
