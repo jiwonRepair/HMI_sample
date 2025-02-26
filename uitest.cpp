@@ -83,3 +83,49 @@ void QmlTest::testPageNavigation()
     // ✅ `pageChanged` 신호가 발생했는지 확인
     QTRY_VERIFY(pageChangedSpy.count() > 0);
 }
+
+void QmlTest::testPageNavigationWithButton()
+{
+    setUp(); // ✅ QML 초기화
+
+    // ✅ PageManager 가져오기
+    PageManager *pm = qobject_cast<PageManager *>(pageManager);
+    QVERIFY2(pm, "❌ ERROR: pageManager could not be cast to PageManager*");
+
+    // ✅ 버튼 찾기 (QML 내 id가 "page2Button"인 버튼을 찾음)
+    QQuickItem *page2Button = rootObject->findChild<QQuickItem*>("page2Button");
+    QVERIFY2(page2Button, "❌ ERROR: page2Button not found!");
+
+    // ✅ 버튼이 속한 윈도우 가져오기
+    QQuickWindow *window = page2Button->window();
+    QVERIFY2(window, "❌ ERROR: QQuickWindow not found for page2Button!");
+
+    // ✅ `pageChanged` 시그널 감지 (QSignalSpy 사용)
+    QSignalSpy pageChangedSpy(pm, &PageManager::pageChanged);
+    QVERIFY2(pageChangedSpy.isValid(), "❌ ERROR: QSignalSpy could not attach to pageChanged signal!");
+
+    // ✅ 버튼 클릭 이벤트 시뮬레이션 (QQuickItem -> QWindow 사용)
+    QPoint center = page2Button->mapToScene(QPointF(page2Button->width() / 2, page2Button->height() / 2)).toPoint();
+    QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, center);
+
+    // ✅ `pageChanged` 신호가 발생했는지 확인
+    QTRY_VERIFY(pageChangedSpy.count() > 0);
+
+    // ✅ "hwstatus" 페이지로 돌아가기 위해 버튼 찾기
+    QQuickItem *hwStatusButton = rootObject->findChild<QQuickItem*>("hwStatusButton");
+    QVERIFY2(hwStatusButton, "❌ ERROR: hwStatusButton not found!");
+
+    // ✅ 버튼이 속한 윈도우 가져오기
+    window = hwStatusButton->window();
+    QVERIFY2(window, "❌ ERROR: QQuickWindow not found for hwStatusButton!");
+
+    // ✅ 버튼 클릭 이벤트 시뮬레이션
+    pageChangedSpy.clear();
+    center = hwStatusButton->mapToScene(QPointF(hwStatusButton->width() / 2, hwStatusButton->height() / 2)).toPoint();
+    QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, center);
+
+    // ✅ `pageChanged` 신호가 발생했는지 확인
+    QTRY_VERIFY(pageChangedSpy.count() > 0);
+}
+
+

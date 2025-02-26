@@ -20,6 +20,7 @@ private:
 private slots:
     //void testButtonClick();     // ✅ 버튼 클릭 테스트
     void testPageNavigation();  // ✅ 페이지 전환 테스트
+    void testPageNavigationWithButton();
 };
 
 #endif // UITEST_H
