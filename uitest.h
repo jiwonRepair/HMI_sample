@@ -21,6 +21,9 @@ private slots:
     //void testButtonClick();     // ✅ 버튼 클릭 테스트
     void testPageNavigation();  // ✅ 페이지 전환 테스트
     void testPageNavigationWithButton();
+    void testFullPageNavigationWithButtons();
+    void clickButtonAndVerify(const QString &buttonId, QSignalSpy &pageChangedSpy);
+    void testStressFullPageNavigation();
 };
 
 #endif // UITEST_H

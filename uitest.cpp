@@ -128,4 +128,90 @@ void QmlTest::testPageNavigationWithButton()
     QTRY_VERIFY(pageChangedSpy.count() > 0);
 }
 
+void QmlTest::testFullPageNavigationWithButtons()
+{
+    setUp(); // ✅ QML 초기화
+
+    PageManager *pm = qobject_cast<PageManager *>(pageManager);
+    QVERIFY2(pm, "❌ ERROR: pageManager could not be cast to PageManager*");
+
+    // ✅ `pageChanged` 시그널 감지 (QSignalSpy 사용)
+    QSignalSpy pageChangedSpy(pm, &PageManager::pageChanged);
+    QVERIFY2(pageChangedSpy.isValid(), "❌ ERROR: QSignalSpy could not attach to pageChanged signal!");
+
+    // ✅ Page1 → Page2 이동
+    clickButtonAndVerify("page2Button", pageChangedSpy);
+
+    // ✅ Page2 → Page3 이동
+    clickButtonAndVerify("page3Button", pageChangedSpy);
+
+    // ✅ Page3 → Page4 이동
+    clickButtonAndVerify("page4Button", pageChangedSpy);
+
+    // ✅ Page4 → Page5 이동
+    clickButtonAndVerify("page5Button", pageChangedSpy);
+
+    // ✅ Page5 → hwStatusButton 이동
+    clickButtonAndVerify("hwStatusButton", pageChangedSpy);
+}
+
+/**
+ * @brief 버튼 클릭을 수행하고 `pageChanged` 시그널이 발생했는지 확인하는 헬퍼 함수
+ */
+void QmlTest::clickButtonAndVerify(const QString &buttonId, QSignalSpy &pageChangedSpy)
+{
+    // ✅ 버튼 찾기
+    QQuickItem *button = rootObject->findChild<QQuickItem*>(buttonId);
+    QVERIFY2(button, QString("❌ ERROR: %1 not found!").arg(buttonId).toUtf8().constData());
+
+    // ✅ 버튼이 속한 윈도우 가져오기
+    QQuickWindow *window = button->window();
+    QVERIFY2(window, QString("❌ ERROR: QQuickWindow not found for %1!").arg(buttonId).toUtf8().constData());
+
+    // ✅ 클릭 이벤트 시뮬레이션
+    QPoint center = button->mapToScene(QPointF(button->width() / 2, button->height() / 2)).toPoint();
+    pageChangedSpy.clear();
+    QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, center);
+
+    // ✅ `pageChanged` 신호가 발생했는지 확인
+    QTRY_VERIFY(pageChangedSpy.count() > 0);
+}
+
+void QmlTest::testStressFullPageNavigation()
+{
+    setUp(); // ✅ QML 초기화
+
+    PageManager *pm = qobject_cast<PageManager *>(pageManager);
+    QVERIFY2(pm, "❌ ERROR: pageManager could not be cast to PageManager*");
+
+    QSignalSpy pageChangedSpy(pm, &PageManager::pageChanged);
+    QVERIFY2(pageChangedSpy.isValid(), "❌ ERROR: QSignalSpy could not attach to pageChanged signal!");
+
+    qDebug() << "[INFO] Running stress test: 1000 iterations";
+
+    for (int i = 0; i < 1000; ++i) {
+        qDebug() << "[INFO] Iteration:" << i + 1;
+
+        // ✅ Page1 → Page2 이동
+        clickButtonAndVerify("page2Button", pageChangedSpy);
+
+        // ✅ Page2 → Page3 이동
+        clickButtonAndVerify("page3Button", pageChangedSpy);
+
+        // ✅ Page3 → Page4 이동
+        clickButtonAndVerify("page4Button", pageChangedSpy);
+
+        // ✅ Page4 → Page5 이동
+        clickButtonAndVerify("page5Button", pageChangedSpy);
+
+        // ✅ Page5 → hwStatusButton 이동
+        clickButtonAndVerify("hwStatusButton", pageChangedSpy);
+
+        // ✅ CPU 과부하 방지 (짧은 대기)
+        QTest::qWait(10); // 10ms 대기 (필요시 조정)
+    }
+
+    qDebug() << "[INFO] Stress test completed successfully!";
+}
+
 
