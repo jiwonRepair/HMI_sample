@@ -81,3 +81,15 @@ install(TARGETS apptest4
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+
+# # ✅ CTest 사용 가능하도록 설정
+# enable_testing()
+
+# # ✅ 테스트 등록
+# add_test(NAME QmlTest COMMAND tst_qmltest)
+
+# # ✅ 테스트 실행 시 환경 변수 적용 (QTEST_FUNCTION_TIMEOUT=0)
+# set_tests_properties(QmlTest PROPERTIES
+#     ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=0"
+# )

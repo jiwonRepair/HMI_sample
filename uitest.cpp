@@ -175,9 +175,36 @@ void QmlTest::clickButtonAndVerify(const QString &buttonId, QSignalSpy &pageChan
 
     // ✅ `pageChanged` 신호가 발생했는지 확인
     QTRY_VERIFY(pageChangedSpy.count() > 0);
+    //QTRY_VERIFY_WITH_TIMEOUT(pageChangedSpy.count() > 0, 1600000);  // ✅ 10분(600,000ms)까지 대기
+
 }
 
-void QmlTest::testStressFullPageNavigation()
+void QmlTest::testStressFullPageNavigation1()
+{
+    runStressTest(0, 10000);
+}
+void QmlTest::testStressFullPageNavigation2()
+{
+    runStressTest(0, 10000);
+}
+void QmlTest::testStressFullPageNavigation3()
+{
+    runStressTest(0, 10000);
+}
+void QmlTest::testStressFullPageNavigation4()
+{
+    runStressTest(0, 10000);
+}
+void QmlTest::testStressFullPageNavigation5()
+{
+    runStressTest(0, 10000);
+}
+void QmlTest::testStressFullPageNavigation6()
+{
+    runStressTest(0, 10000);
+}
+
+void QmlTest::runStressTest(int start, int end)
 {
     setUp(); // ✅ QML 초기화
 
@@ -189,7 +216,7 @@ void QmlTest::testStressFullPageNavigation()
 
     qDebug() << "[INFO] Running stress test: 1000 iterations";
 
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = start; i < end; ++i) {
         qDebug() << "[INFO] Iteration:" << i + 1;
 
         // ✅ Page1 → Page2 이동
@@ -213,5 +240,3 @@ void QmlTest::testStressFullPageNavigation()
 
     qDebug() << "[INFO] Stress test completed successfully!";
 }
-
-
