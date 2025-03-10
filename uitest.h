@@ -1,10 +1,11 @@
 #ifndef UITEST_H
 #define UITEST_H
 
-#include <QtTest/QtTest>
+#include <QTest> //#include <QtTest/QtTest> or #include <QtTest>는 개별 모듈 지정이므로 경고 발생 함
 #include <QQmlApplicationEngine>
 #include <QtQuick/QQuickView>
 #include <QtQuick/QQuickItem>
+#include <QSignalSpy>
 
 class QmlTest : public QObject
 {

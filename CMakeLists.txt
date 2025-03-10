@@ -43,6 +43,8 @@ qt_add_qml_module(apptest4
     VERSION 1.0
     QML_FILES ${QML_FILES}
     QML_FILES
+    SOURCES loggingdecorator.h loggingdecorator.cpp
+    SOURCES appguard.h appguard.cpp
 )
 
 # ✅ Qt 라이브러리 링크 추가
@@ -64,6 +66,7 @@ add_executable(tst_qmltest
     diskmonitor.h diskmonitor.cpp
     hardwarestatusmodel.h hardwarestatusmodel.cpp
     wifimonitor.h wifimonitor.cpp
+    uitest.h
 )
 
 # ✅ 테스트 실행 파일에 Qt 라이브러리 추가

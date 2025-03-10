@@ -8,9 +8,10 @@
 #include "diskmonitor.h"
 #include "hardwarestatusmodel.h"
 #include "wifimonitor.h"
+#include "loggingdecorator.h"
+#include "appguard.h"
 
 //#include "main.moc"
-
 
 int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
@@ -24,18 +25,30 @@ int main(int argc, char *argv[]) {
     HardwareStatusModel hardwareStatusModel;
     WifiMonitor wifiMonitor;
 
-    engine.rootContext()->setContextProperty("pageManager", &pageManager);
-    engine.rootContext()->setContextProperty("cpuMonitor", &cpuMonitor);
-    engine.rootContext()->setContextProperty("batteryMonitor", &batteryMonitor);
-    engine.rootContext()->setContextProperty("memoryMonitor", &memoryMonitor);
-    engine.rootContext()->setContextProperty("diskMonitor", &diskMonitor);        
-    engine.rootContext()->setContextProperty("hardwareStatusModel", &hardwareStatusModel);
-    engine.rootContext()->setContextProperty("wifiMonitor", &wifiMonitor);
+    LoggingDecorator logger("HMI Application");
 
-    engine.load(QUrl::fromLocalFile("D:/qtprojects/HMI_sample/Main.qml"));
+    // ✅ 예외 처리를 감싸서 QML 컨텍스트에 객체 등록
+    logger.execute([&]() {
+        engine.rootContext()->setContextProperty("pageManager", &pageManager);
+        engine.rootContext()->setContextProperty("cpuMonitor", &cpuMonitor);
+        engine.rootContext()->setContextProperty("batteryMonitor", &batteryMonitor);
+        engine.rootContext()->setContextProperty("memoryMonitor", &memoryMonitor);
+        engine.rootContext()->setContextProperty("diskMonitor", &diskMonitor);
+        engine.rootContext()->setContextProperty("hardwareStatusModel", &hardwareStatusModel);
+        engine.rootContext()->setContextProperty("wifiMonitor", &wifiMonitor);
+    });
+
+    // ✅ 예외 발생 시 안전한 QML 로딩
+    logger.execute([&]() {
+        engine.load(QUrl::fromLocalFile("D:/qtprojects/HMI_sample/Main.qml"));
+    });
 
     if (engine.rootObjects().isEmpty())
         return -1;
 
-    return app.exec();
+    // ✅ RAII 패턴 적용 (AppGuard 사용)
+    AppGuard appGuard(app, engine);
+    return appGuard.run();
+
+    //return app.exec();
 }
