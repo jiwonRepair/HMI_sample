@@ -12,3 +12,4 @@ void LoggingDecorator::execute(std::function<void()> func) {
         std::cerr << "[ERROR] " << componentName.toStdString() << " Unknown exception occurred!" << std::endl;
     }
 }
+

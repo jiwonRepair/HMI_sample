@@ -40,35 +40,24 @@ ApplicationWindow {
                 Button { id: page4Button; objectName: "page4Button"; text: "Page 4"; width: parent.width; onClicked: pageManager.showPage("page4") }
                 Button { id: page5Button; objectName: "page5Button"; text: "Page 5"; width: parent.width; onClicked: pageManager.showPage("page5") }
 
-                // ✅ 다운로드 버튼
                 Button {
-                    id: downloadButton
-                    text: "Download File"
-                    onClicked: {
-                        osFileManager.downloadFile("https://example.com/sample.zip", "/home/user/Downloads/sample.zip")
-                        downloadButton.text = "Downloading..."
-                    }
+                    text: "Download from URL"
+                    onClicked: osFileManager.downloadFromUrl("https://example.com/file.txt", "C:/Users/MyUser/Documents/file.txt")
                 }
 
-                // ✅ 업로드 버튼
                 Button {
-                    id: uploadButton
-                    text: "Upload File"
-                    onClicked: {
-                        osFileManager.uploadFile("/home/user/Documents/test.txt", "https://example.com/upload")
-                        uploadButton.text = "Uploading..."
-                    }
+                    text: "Upload to URL"
+                    onClicked: osFileManager.uploadToUrl("C:/Users/MyUser/Documents/file.txt", "https://example.com/upload")
                 }
 
-                // ✅ 다운로드/업로드 취소 버튼
                 Button {
-                    id: cancelButton
-                    text: "Cancel Download"
-                    onClicked: {
-                        osFileManager.cancelDownload()
-                        downloadButton.text = "Download File"
-                        uploadButton.text = "Upload File"
-                    }
+                    text: "Copy from USB"
+                    onClicked: osFileManager.copyFromUsb("E:/autoscan_rows.csv", "D:/download/autoscan_rows.csv")
+                }
+
+                Button {
+                    text: "Upload from USB"
+                    onClicked: osFileManager.uploadFromUsb("D:/download/autoscan_rows.csv", "E:/autoscan_rows.csv")
                 }
             }
         }
@@ -171,12 +160,19 @@ ApplicationWindow {
             }
         }
 
-        // ✅ 다운로드 완료 이벤트 처리
         Connections {
             target: osFileManager
-            onDownloadCompleted: downloadButton.text = "Download File"
-            onUploadCompleted: uploadButton.text = "Upload File"
+            function onDownloadCompleted(savePath) {
+                downloadButton.text = "Download File";
+                console.log("[INFO] Download completed: " + savePath);
+            }
+
+            function onUploadCompleted(filePath) {
+                uploadButton.text = "Upload File";
+                console.log("[INFO] Upload completed: " + filePath);
+            }
         }
+
 
     }
 }
