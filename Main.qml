@@ -39,6 +39,37 @@ ApplicationWindow {
                 Button { id: page3Button; objectName: "page3Button"; text: "Page 3"; width: parent.width; onClicked: pageManager.showPage("page3") }
                 Button { id: page4Button; objectName: "page4Button"; text: "Page 4"; width: parent.width; onClicked: pageManager.showPage("page4") }
                 Button { id: page5Button; objectName: "page5Button"; text: "Page 5"; width: parent.width; onClicked: pageManager.showPage("page5") }
+
+                // ✅ 다운로드 버튼
+                Button {
+                    id: downloadButton
+                    text: "Download File"
+                    onClicked: {
+                        osFileManager.downloadFile("https://example.com/sample.zip", "/home/user/Downloads/sample.zip")
+                        downloadButton.text = "Downloading..."
+                    }
+                }
+
+                // ✅ 업로드 버튼
+                Button {
+                    id: uploadButton
+                    text: "Upload File"
+                    onClicked: {
+                        osFileManager.uploadFile("/home/user/Documents/test.txt", "https://example.com/upload")
+                        uploadButton.text = "Uploading..."
+                    }
+                }
+
+                // ✅ 다운로드/업로드 취소 버튼
+                Button {
+                    id: cancelButton
+                    text: "Cancel Download"
+                    onClicked: {
+                        osFileManager.cancelDownload()
+                        downloadButton.text = "Download File"
+                        uploadButton.text = "Upload File"
+                    }
+                }
             }
         }
 
@@ -139,5 +170,13 @@ ApplicationWindow {
                 page5.visible = (pageName === "page5");
             }
         }
+
+        // ✅ 다운로드 완료 이벤트 처리
+        Connections {
+            target: osFileManager
+            onDownloadCompleted: downloadButton.text = "Download File"
+            onUploadCompleted: uploadButton.text = "Upload File"
+        }
+
     }
 }

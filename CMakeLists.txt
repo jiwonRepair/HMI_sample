@@ -45,6 +45,7 @@ qt_add_qml_module(apptest4
     QML_FILES
     SOURCES loggingdecorator.h loggingdecorator.cpp
     SOURCES appguard.h appguard.cpp
+    SOURCES osfilemanager.h osfilemanager.cpp
 )
 
 # ✅ Qt 라이브러리 링크 추가
