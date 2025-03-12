@@ -42,22 +42,26 @@ ApplicationWindow {
 
                 Button {
                     text: "Download from URL"
-                    onClicked: osFileManager.downloadFromUrl("https://example.com/file.txt", "C:/Users/MyUser/Documents/file.txt")
+                    width: parent.width
+                    onClicked: osFileManager.downloadFromUrl("https://example.com/file.txt", "D:/test.txt")
                 }
 
                 Button {
                     text: "Upload to URL"
-                    onClicked: osFileManager.uploadToUrl("C:/Users/MyUser/Documents/file.txt", "https://example.com/upload")
+                    width: parent.width
+                    onClicked: osFileManager.uploadToUrl("D:/test.txt", "https://example.com/upload")
                 }
 
                 Button {
                     text: "Copy from USB"
-                    onClicked: osFileManager.copyFromUsb("E:/autoscan_rows.csv", "D:/download/autoscan_rows.csv")
+                    width: parent.width
+                    onClicked: osFileManager.copyFromUsb("E:/test.txt", "D:/test.txt")
                 }
 
                 Button {
                     text: "Upload from USB"
-                    onClicked: osFileManager.uploadFromUsb("D:/download/autoscan_rows.csv", "E:/autoscan_rows.csv")
+                    width: parent.width
+                    onClicked: osFileManager.uploadFromUsb("D:/test.txt", "E:/test.txt")
                 }
             }
         }
@@ -163,12 +167,10 @@ ApplicationWindow {
         Connections {
             target: osFileManager
             function onDownloadCompleted(savePath) {
-                downloadButton.text = "Download File";
                 console.log("[INFO] Download completed: " + savePath);
             }
 
             function onUploadCompleted(filePath) {
-                uploadButton.text = "Upload File";
                 console.log("[INFO] Upload completed: " + filePath);
             }
         }
