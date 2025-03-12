@@ -14,7 +14,6 @@
 
 #include <QSignalSpy>  // ✅ QSignalSpy 추가 (신호 감지 용도)
 
-
 // ✅ QML 및 객체 초기화 (테스트 시작 전에 실행됨)
 void QmlTest::setUp()
 {
