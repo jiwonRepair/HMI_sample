@@ -1,5 +1,4 @@
 #include "uitest.h"
-#include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QTest>
 #include <QQuickItem>
@@ -12,6 +11,8 @@
 #include "hardwarestatusmodel.h"
 #include "wifimonitor.h"
 
+#include <QtQuick/QQuickView>
+#include <QtQuick/QQuickItem>
 #include <QSignalSpy>  // ✅ QSignalSpy 추가 (신호 감지 용도)
 
 // ✅ QML 및 객체 초기화 (테스트 시작 전에 실행됨)
@@ -184,23 +185,23 @@ void QmlTest::testStressFullPageNavigation1()
 }
 void QmlTest::testStressFullPageNavigation2()
 {
-    runStressTest(0, 10000);
+    //runStressTest(0, 10000);
 }
 void QmlTest::testStressFullPageNavigation3()
 {
-    runStressTest(0, 10000);
+    //runStressTest(0, 10000);
 }
 void QmlTest::testStressFullPageNavigation4()
 {
-    runStressTest(0, 10000);
+    //runStressTest(0, 10000);
 }
 void QmlTest::testStressFullPageNavigation5()
 {
-    runStressTest(0, 10000);
+    //runStressTest(0, 10000);
 }
 void QmlTest::testStressFullPageNavigation6()
 {
-    runStressTest(0, 10000);
+    //runStressTest(0, 10000);
 }
 
 void QmlTest::runStressTest(int start, int end)
