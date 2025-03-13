@@ -13,8 +13,6 @@ private:
     QQmlApplicationEngine engine;
     QObject *rootObject = nullptr;
     QObject *pageManager = nullptr;
-    QString testFilePath;
-    QString downloadedFilePath;
 
     void setUp(); // ✅ QML 및 객체 초기화 함수
 

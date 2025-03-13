@@ -10,9 +10,6 @@
 #include "diskmonitor.h"
 #include "hardwarestatusmodel.h"
 #include "wifimonitor.h"
-
-#include <QtQuick/QQuickView>
-#include <QtQuick/QQuickItem>
 #include <QSignalSpy>  // ✅ QSignalSpy 추가 (신호 감지 용도)
 
 // ✅ QML 및 객체 초기화 (테스트 시작 전에 실행됨)

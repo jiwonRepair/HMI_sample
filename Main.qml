@@ -43,25 +43,26 @@ ApplicationWindow {
                 Button {
                     text: "Download from URL"
                     width: parent.width
-                    onClicked: osFileManager.downloadFromUrl("https://example.com/file.txt", "D:/test.txt")
+                    onClicked: osFileManager.downloadFromUrl("https://example.com/file.txt", "D:/test_local.txt")
                 }
 
                 Button {
                     text: "Upload to URL"
                     width: parent.width
-                    onClicked: osFileManager.uploadToUrl("D:/test.txt", "https://example.com/upload")
+                    onClicked: osFileManager.uploadToUrl("D:/test_local.txt", "https://example.com/upload")
                 }
 
                 Button {
                     text: "Copy from USB"
+                    objectName: "copyFromUsbButton"
                     width: parent.width
-                    onClicked: osFileManager.copyFromUsb("E:/test.txt", "D:/test.txt")
+                    onClicked: osFileManager.copyFromUsb("E:/test_usb.txt", "D:/test_local.txt")
                 }
 
                 Button {
                     text: "Upload from USB"
                     width: parent.width
-                    onClicked: osFileManager.uploadFromUsb("D:/test.txt", "E:/test.txt")
+                    onClicked: osFileManager.uploadFromUsb("D:/test_local.txt", "E:/test_usb.txt")
                 }
             }
         }
