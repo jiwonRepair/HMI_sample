@@ -155,6 +155,6 @@ void TestOsFileManager::buttonStressTest()
 
     qDebug() << "[INFO] Running testUploadFromUsb test";
 
-    clickButtonAndVerify("copyFromUsbButton", uploadCompletedSpy);
+    clickButtonAndVerify("uploadFromUsbButton", uploadCompletedSpy);
 }
 

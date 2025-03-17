@@ -61,6 +61,7 @@ ApplicationWindow {
 
                 Button {
                     text: "Upload from USB"
+                    objectName: "uploadFromUsbButton"
                     width: parent.width
                     onClicked: osFileManager.uploadFromUsb("D:/test_local.txt", "E:/test_usb.txt")
                 }
