@@ -165,18 +165,5 @@ ApplicationWindow {
                 page5.visible = (pageName === "page5");
             }
         }
-
-        Connections {
-            target: osFileManager
-            function onDownloadCompleted(savePath) {
-                console.log("[INFO] Download completed: " + savePath);
-            }
-
-            function onUploadCompleted(filePath) {
-                console.log("[INFO] Upload completed: " + filePath);
-            }
-        }
-
-
     }
 }
