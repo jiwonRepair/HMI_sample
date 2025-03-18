@@ -72,7 +72,7 @@ void OsFileManager::copyFromUsb(const QString &usbPath, const QString &destinati
 
 
 // ✅ 로컬 하드디스크에서 USB로 파일 이동 (업로드 개념)
-void OsFileManager::uploadFromUsb(const QString &localPath, const QString &usbPath) {
+void OsFileManager::copyToUsb(const QString &localPath, const QString &usbPath) {
     logger.execute([&]() {
         if (QFile::exists(usbPath)) {
             QFile::remove(usbPath);

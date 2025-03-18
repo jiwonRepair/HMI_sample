@@ -16,7 +16,7 @@ public:
 
     // ✅ USB 파일 복사 및 업로드
     Q_INVOKABLE void copyFromUsb(const QString &usbPath, const QString &destinationPath);
-    Q_INVOKABLE void uploadFromUsb(const QString &usbPath, const QString &serverUrl);
+    Q_INVOKABLE void copyToUsb(const QString &usbPath, const QString &serverUrl);
 
     Q_INVOKABLE bool isDownloadInProgress();
     Q_INVOKABLE void cancelDownload();

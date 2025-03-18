@@ -23,8 +23,9 @@ private:
 private slots:
     void initTestCase();
     void testCopyFromUsb();
-    void testUploadFromUsb();
+    void testCopyToUsb();
     void clickButtonAndVerify(const QString &buttonId, QSignalSpy &CompletedSpy);
+    void clickButton(const QString &buttonId);
     void testDownloadFromUrl();
     void testUploadToUrl();
     void buttonStressTest();

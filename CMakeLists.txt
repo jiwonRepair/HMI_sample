@@ -47,6 +47,9 @@ qt_add_qml_module(apptest4
     SOURCES appguard.h appguard.cpp
     SOURCES osfilemanager.h osfilemanager.cpp
     SOURCES
+    QML_FILES popup.qml
+    RESOURCES
+    RESOURCES resource.qrc
 )
 
 # ✅ Qt 라이브러리 링크 추가
@@ -90,3 +93,8 @@ install(TARGETS apptest4
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+qt_add_resources(apptest4 "resources"
+    PREFIX "/"
+    FILES
+        images/download.png  # ✅ download.png 추가
+)

@@ -1,3 +1,5 @@
+
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 
@@ -7,10 +9,71 @@ ApplicationWindow {
     height: 480
     objectName: "mainWindow"  // ✅ C++에서 찾기 쉽게 설정
 
+    property string popupTitle: "기본 제목"
+    property string popupMessage: "기본 메시지"
+    property string popupImage: ""  // 이미지 경로
+
     Rectangle {
         width: parent.width
         height: parent.height
         color: "#f5f5f5"
+
+        // 🔥 팝업 창 (이미지 포함)
+        Popup {
+            id: myPopup
+            width: 300
+            height: 250
+            modal: true
+            focus: true
+            visible: false
+            closePolicy: Popup.NoAutoClose
+
+            Rectangle {
+                anchors.fill: parent
+                color: "white"
+                border.color: "black"
+                border.width: 1
+                radius: 10
+
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 10
+
+                    Image {
+                        source: popupImage
+                        // ✅ QML에서 자동 크기 조정
+                        // ✅ 너무 크면 강제로 축소
+                        width: parent.width
+                        height: parent.height
+                        fillMode: Image.PreserveAspectFit
+                        visible: popupImage !== ""  // 이미지가 있을 때만 표시
+                        anchors.horizontalCenter: parent.horizontalCenter  // ✅ 가로 중앙 정렬
+                        anchors.top: parent.top  // ✅ 상단 정렬
+                        anchors.topMargin: 2  // ✅ 상단 여백 추가
+                    }
+
+                    Text {
+                        text: popupTitle
+                        font.bold: true
+                        font.pixelSize: 16
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    Text {
+                        text: popupMessage
+                        font.pixelSize: 14
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    Button {
+                        text: "닫기"
+                        objectName: "popupCloseButton"
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        onClicked: myPopup.visible = false
+                    }
+                }
+            }
+        }
 
         // 🔥 왼쪽 사이드바
         Rectangle {
@@ -60,10 +123,10 @@ ApplicationWindow {
                 }
 
                 Button {
-                    text: "Upload from USB"
-                    objectName: "uploadFromUsbButton"
+                    text: "Copy to USB"
+                    objectName: "copyToUsbButton"
                     width: parent.width
-                    onClicked: osFileManager.uploadFromUsb("D:/test_local.txt", "E:/test_usb.txt")
+                    onClicked: osFileManager.copyToUsb("D:/test_local.txt", "E:/test_usb.txt")
                 }
             }
         }
@@ -165,5 +228,26 @@ ApplicationWindow {
                 page5.visible = (pageName === "page5");
             }
         }
+
+        Connections {
+            target: osFileManager
+            function onDownloadCompleted(destinationPath) {
+                popupTitle = "✅ 다운로드 완료"
+                popupMessage = "파일이 정상적으로 다운로드되었습니다."
+                popupImage = "qrc:/images/download.png"
+                myPopup.visible = true
+            }
+        }
+
+        Connections {
+            target: osFileManager
+            function onUploadCompleted(usbPath) {
+                popupTitle = "✅ 업로드 완료"
+                popupMessage = "파일이 정상적으로 업로드되었습니다."
+                popupImage = "qrc:/images/download.png"
+                myPopup.visible = true
+            }
+        }
+
     }
 }

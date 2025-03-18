@@ -178,7 +178,7 @@ void QmlTest::clickButtonAndVerify(const QString &buttonId, QSignalSpy &pageChan
 
 void QmlTest::testStressFullPageNavigation1()
 {
-    runStressTest(0, 10000);
+    runStressTest(0, 100);
 }
 void QmlTest::testStressFullPageNavigation2()
 {

@@ -1,4 +1,4 @@
-#include "TestOsFileManager.h"
+#include "testosfilemanager.h"
 #include <QQmlContext>
 #include <QFile>
 #include <QDir>
@@ -43,8 +43,8 @@ void TestOsFileManager::testCopyFromUsb() {
 }
 
 // ✅ 3. 로컬 → USB 파일 업로드 테스트
-void TestOsFileManager::testUploadFromUsb() {
-    fileManager->uploadFromUsb(localTestFilePath, usbTestFilePath);
+void TestOsFileManager::testCopyToUsb() {
+    fileManager->copyToUsb(localTestFilePath, usbTestFilePath);
     QVERIFY(QFile::exists(usbTestFilePath)); // 업로드 성공 여부 확인
 }
 
@@ -136,6 +136,22 @@ void TestOsFileManager::clickButtonAndVerify(const QString &buttonId, QSignalSpy
     //QTRY_VERIFY_WITH_TIMEOUT(downloadCompletedSpy.count() > 0, 1600000);  // ✅ 10분(600,000ms)까지 대기
 }
 
+void TestOsFileManager::clickButton(const QString &buttonId)
+{
+    // ✅ 버튼 찾기
+    QQuickItem *button = rootObject->findChild<QQuickItem*>(buttonId);
+    QVERIFY2(button, QString("❌ ERROR: %1 not found!").arg(buttonId).toUtf8().constData());
+
+    // ✅ 버튼이 속한 윈도우 가져오기
+    QQuickWindow *window = button->window();
+    QVERIFY2(window, QString("❌ ERROR: QQuickWindow not found for %1!").arg(buttonId).toUtf8().constData());
+
+    // ✅ 클릭 이벤트 시뮬레이션
+    QPoint center = button->mapToScene(QPointF(button->width() / 2, button->height() / 2)).toPoint();
+
+    QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, center);
+}
+
 void TestOsFileManager::buttonStressTest()
 {
     setUp(); // ✅ QML 초기화
@@ -149,12 +165,17 @@ void TestOsFileManager::buttonStressTest()
     qDebug() << "[INFO] Running testCopyFromUsbButton test";
 
     clickButtonAndVerify("copyFromUsbButton", downloadCompletedSpy);
+    QTest::qWait(100);
+    clickButton("popupCloseButton");
 
     QSignalSpy uploadCompletedSpy(osf, &OsFileManager::uploadCompleted);
     QVERIFY2(uploadCompletedSpy.isValid(), "❌ ERROR: QSignalSpy could not attach to uploadCompleted signal!");
 
-    qDebug() << "[INFO] Running testUploadFromUsb test";
+    qDebug() << "[INFO] Running testCopyToUsb test";
 
-    clickButtonAndVerify("uploadFromUsbButton", uploadCompletedSpy);
+    clickButtonAndVerify("copyToUsbButton", uploadCompletedSpy);
+    QTest::qWait(100);
+    clickButton("popupCloseButton");
+
 }
 
