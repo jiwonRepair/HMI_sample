@@ -98,3 +98,9 @@ qt_add_resources(apptest4 "resources"
     FILES
         images/download.png  # ✅ download.png 추가
 )
+
+qt_add_resources(tst_qmltest "resources"
+    PREFIX "/"
+    FILES
+        images/download.png  # ✅ download.png 추가
+)
