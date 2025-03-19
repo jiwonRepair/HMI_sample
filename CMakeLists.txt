@@ -5,7 +5,9 @@ project(test4 VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ✅ Qt 라이브러리 찾기 (Gui, Qml, Quick 추가)
-find_package(Qt6 REQUIRED COMPONENTS Gui Qml Quick Test)
+find_package(Qt6 REQUIRED COMPONENTS Gui Qml Quick Test Core Concurrent)
+
+
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -53,7 +55,7 @@ qt_add_qml_module(apptest4
 )
 
 # ✅ Qt 라이브러리 링크 추가
-target_link_libraries(apptest4 PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick)
+target_link_libraries(apptest4 PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Core Qt6::Concurrent)
 
 # ✅ Windows 시스템 라이브러리 추가 (🚀 오류 해결)
 if(WIN32)

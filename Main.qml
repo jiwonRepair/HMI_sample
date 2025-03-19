@@ -1,17 +1,22 @@
-
-
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Controls.Material 2.15
 
 ApplicationWindow {
     visible: true
-    width: 800
-    height: 480
+    width: 1000
+    height: 680
     objectName: "mainWindow"  // ✅ C++에서 찾기 쉽게 설정
 
     property string popupTitle: "기본 제목"
     property string popupMessage: "기본 메시지"
     property string popupImage: ""  // 이미지 경로
+
+    // ✅ 진행률 변수
+    property int progressValue: 0
+
+    // ✅ Qt Quick Controls 스타일 적용 (Material 또는 Fusion)
+    Material.theme: Material.Light
 
     Rectangle {
         width: parent.width
@@ -86,7 +91,7 @@ ApplicationWindow {
         // 🔥 왼쪽 사이드바
         Rectangle {
             id: sidebar
-            width: 150
+            width: 200
             height: parent.height
             color: "#333"
             anchors.left: parent.left
@@ -127,7 +132,7 @@ ApplicationWindow {
                     text: "Copy from USB"
                     objectName: "copyFromUsbButton"
                     width: parent.width
-                    onClicked: osFileManager.copyFromUsb("E:/test_usb.txt", "D:/test_local.txt")
+                    onClicked: osFileManager.copyFromUsb("E:/test.zip", "D:/test.zip")
                 }
 
                 Button {
@@ -135,6 +140,39 @@ ApplicationWindow {
                     objectName: "copyToUsbButton"
                     width: parent.width
                     onClicked: osFileManager.copyToUsb("D:/test_local.txt", "E:/test_usb.txt")
+                }
+
+                // ✅ 진행률 바 (다운로드 & 복사 공용)
+                Item {
+                    width: parent.width
+                    height: 30
+
+                    ProgressBar {
+                        id: progressBar
+                        width: parent.width
+                        height: parent.height
+                        from: 0
+                        to: 100
+                        value: progressValue
+                        background: Rectangle {
+                            color: "lightgray" // ✅ 진행되지 않은 부분의 색상
+                            radius: 5
+                        }
+                        contentItem: Item {
+                            Rectangle {
+                                width: progressBar.visualPosition * progressBar.width
+                                height: progressBar.height
+                                color: progressValue < 100 ? "green" : "white" // ✅ 진행 중일 때 초록색, 완료 시 흰색
+                                radius: 5
+                            }
+                            Text {
+                                text: progressValue + "%"
+                                anchors.centerIn: parent
+                                font.bold: true
+                                color: "black"
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -239,20 +277,31 @@ ApplicationWindow {
 
         Connections {
             target: osFileManager
-            function onDownloadCompleted(destinationPath) {
+
+            function onProgressChanged(progress) {
+                progressValue = progress
+            }
+
+            function onDownloadCompleted(savePath) {
+                progressValue = 100
                 popupTitle = "✅ 다운로드 완료"
                 popupMessage = "파일이 정상적으로 다운로드되었습니다."
                 popupImage = "qrc:/images/download.png"
                 myPopup.visible = true
             }
-        }
 
-        Connections {
-            target: osFileManager
-            function onUploadCompleted(usbPath) {
+            function onUploadCompleted(filePath) {
+                progressValue = 100
                 popupTitle = "✅ 업로드 완료"
                 popupMessage = "파일이 정상적으로 업로드되었습니다."
                 popupImage = "qrc:/images/download.png"
+                myPopup.visible = true
+            }
+
+            function onErrorOccurred(error) {
+                popupTitle = "❌ 오류 발생"
+                popupMessage = "오류 메시지: " + error
+                popupImage = "qrc:/images/error.png"
                 myPopup.visible = true
             }
         }
