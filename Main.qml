@@ -21,12 +21,15 @@ ApplicationWindow {
         // 🔥 팝업 창 (이미지 포함)
         Popup {
             id: myPopup
-            width: 300
-            height: 250
+            width: 350
+            height: 300
             modal: true
             focus: true
             visible: false
             closePolicy: Popup.NoAutoClose
+            // 부모(ApplicationWindow)의 가운데에 배치
+            x: (parent.width - width) / 2
+            y: (parent.height - height) / 2
 
             Rectangle {
                 anchors.fill: parent
@@ -39,17 +42,22 @@ ApplicationWindow {
                     anchors.centerIn: parent
                     spacing: 10
 
-                    Image {
-                        source: popupImage
-                        // ✅ QML에서 자동 크기 조정
-                        // ✅ 너무 크면 강제로 축소
+                    Item {  // ⚡ Image를 감싸는 Item 추가
                         width: parent.width
-                        height: parent.height
-                        fillMode: Image.PreserveAspectFit
-                        visible: popupImage !== ""  // 이미지가 있을 때만 표시
-                        anchors.horizontalCenter: parent.horizontalCenter  // ✅ 가로 중앙 정렬
-                        anchors.top: parent.top  // ✅ 상단 정렬
-                        anchors.topMargin: 2  // ✅ 상단 여백 추가
+                        height: 150  // 적절한 높이 지정
+
+                        Image {
+                            source: popupImage // 이미지 파일 경로
+                            // ✅ QML에서 자동 크기 조정
+                            // ✅ 너무 크면 강제로 축소
+                            width: Math.min(parent.width * 0.8, implicitWidth)
+                            height: Math.min(parent.height * 0.8, implicitHeight)
+                            fillMode: Image.PreserveAspectFit // 원본 비율 유지
+                            visible: popupImage !== ""  // 이미지가 있을 때만 표시
+                            anchors.bottom: parent.bottom  // 부모의 아래쪽에 배치
+                            anchors.bottomMargin: 10  // 10px 위로 띄우기
+                            anchors.horizontalCenter: parent.horizontalCenter  // 가로 중앙 정렬
+                        }
                     }
 
                     Text {
