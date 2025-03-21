@@ -135,44 +135,44 @@ ApplicationWindow {
                     onClicked: osFileManager.copyFromUsb("E:/test.zip", "D:/test.zip")
                 }
 
+                // // ✅ 진행률 바 (다운로드 & 복사 공용)
+                // Item {
+                //     width: parent.width
+                //     height: 10
+
+                //     ProgressBar {
+                //         id: progressBar
+                //         width: parent.width
+                //         height: parent.height
+                //         from: 0
+                //         to: 100
+                //         value: progressValue
+                //         background: Rectangle {
+                //             color: "lightgray" // ✅ 진행되지 않은 부분의 색상
+                //             radius: 5
+                //         }
+                //         contentItem: Item {
+                //             Rectangle {
+                //                 width: progressBar.visualPosition * progressBar.width
+                //                 height: progressBar.height
+                //                 color: progressValue < 100 ? "green" : "white" // ✅ 진행 중일 때 초록색, 완료 시 흰색
+                //                 radius: 5
+                //             }
+                //             Text {
+                //                 text: progressValue + "%"
+                //                 anchors.centerIn: parent
+                //                 font.bold: true
+                //                 color: "black"
+                //             }
+                //         }
+                //     }
+                // }
+
                 Button {
                     text: "Copy to USB"
                     objectName: "copyToUsbButton"
                     width: parent.width
                     onClicked: osFileManager.copyToUsb("D:/test_local.txt", "E:/test_usb.txt")
-                }
-
-                // ✅ 진행률 바 (다운로드 & 복사 공용)
-                Item {
-                    width: parent.width
-                    height: 30
-
-                    ProgressBar {
-                        id: progressBar
-                        width: parent.width
-                        height: parent.height
-                        from: 0
-                        to: 100
-                        value: progressValue
-                        background: Rectangle {
-                            color: "lightgray" // ✅ 진행되지 않은 부분의 색상
-                            radius: 5
-                        }
-                        contentItem: Item {
-                            Rectangle {
-                                width: progressBar.visualPosition * progressBar.width
-                                height: progressBar.height
-                                color: progressValue < 100 ? "green" : "white" // ✅ 진행 중일 때 초록색, 완료 시 흰색
-                                radius: 5
-                            }
-                            Text {
-                                text: progressValue + "%"
-                                anchors.centerIn: parent
-                                font.bold: true
-                                color: "black"
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -301,6 +301,7 @@ ApplicationWindow {
             function onErrorOccurred(error) {
                 popupTitle = "❌ 오류 발생"
                 popupMessage = "오류 메시지: " + error
+                console.log("FileManager ERROR : " + error)
                 popupImage = "qrc:/images/error.png"
                 myPopup.visible = true
             }

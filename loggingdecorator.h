@@ -9,6 +9,7 @@ public:
     explicit LoggingDecorator(const QString &name);
 
     void execute(std::function<void()> func);
+    void log(const QString &message);
 
 private:
     QString componentName;

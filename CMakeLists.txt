@@ -84,6 +84,13 @@ target_link_libraries(tst_qmltest PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Test
 
 # ✅ Windows 시스템 라이브러리 추가 (🚀 오류 해결)
 if(WIN32)
+    set(MT_EXE "C:/Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/mt.exe")
+
+    add_custom_command(TARGET apptest4 POST_BUILD
+        COMMAND "${MT_EXE}"
+        ARGS -manifest ${CMAKE_CURRENT_SOURCE_DIR}/apptest4.manifest -outputresource:$<TARGET_FILE:apptest4>\;1
+        COMMENT "Embedding manifest into apptest4.exe"
+    )
     target_link_libraries(tst_qmltest PRIVATE setupapi wlanapi)
 endif()
 

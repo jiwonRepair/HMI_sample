@@ -13,3 +13,6 @@ void LoggingDecorator::execute(std::function<void()> func) {
     }
 }
 
+void LoggingDecorator::log(const QString &message) {
+    std::cout << "[" << componentName.toStdString() << "] " << message.toStdString() << std::endl;
+}

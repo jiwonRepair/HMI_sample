@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QString>
 #include <QProcess>
-#include <QCryptographicHash>
 #include <QFile>
 #include "LoggingDecorator.h"
 

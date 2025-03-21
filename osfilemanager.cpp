@@ -1,109 +1,155 @@
-#include "OsFileManager.h"
-#include <QFile>
-#include <QDebug>
-#include <QDir>
-#include <QTextStream>
-#include <QProcess>
+#include "osfilemanager.h"
 #include <QRegularExpression>
-#include <stdexcept>
-#include <QtConcurrent>
+#include <QRegularExpressionMatch>
+#include <QDebug>
+#include <QFileInfo>
+#include <QDir>
+#include <QStorageInfo>
+#include <QStandardPaths>
 
-OsFileManager::OsFileManager(QObject *parent)
-    : QObject(parent), cancelRequested(false), downloadInProgress(false), logger("OsFileManager") {
+#ifdef Q_OS_WIN
+#define COPY_COMMAND "robocopy"
+#else
+#define COPY_COMMAND "rsync"
+#endif
+
+OsFileManager::OsFileManager(QObject *parent) : QObject(parent), cancelRequested(false), downloadInProgress(false), logger("OsFileManager") {
     downloadProcess = new QProcess(this);
     connect(downloadProcess, &QProcess::readyReadStandardOutput, this, &OsFileManager::handleDownloadProgress);
     connect(downloadProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &OsFileManager::handleDownloadFinished);
 }
 
-// ✅ USB → 로컬 복사 (비동기 처리)
+// ✅ USB → 로컬 복사 (`copyFromUsb`)
 void OsFileManager::copyFromUsb(const QString &usbPath, const QString &destinationPath, bool convertToUtf16) {
-    cancelRequested = false;
+    if (!QFileInfo::exists(usbPath)) {
+        emit errorOccurred("Source file does not exist.");
+        logger.log("ERROR: Source file does not exist: " + usbPath);
+        return;
+    }
 
-    QFuture<void> future = QtConcurrent::run([=]() {
-        try {
-            QFile sourceFile(usbPath);
-            QFile destinationFile(destinationPath);
+    QString sourceDir = QFileInfo(usbPath).absolutePath();
+    QString fileName = QFileInfo(usbPath).fileName();
+    QString destDir = QFileInfo(destinationPath).absolutePath();
 
-            if (!sourceFile.open(QIODevice::ReadOnly)) {
-                emit errorOccurred("Failed to open USB file.");
-                return;
+    QDir().mkpath(destDir); // 대상 폴더 없으면 생성
+
+    QProcess *process = new QProcess(this);
+
+    QStringList args;
+    args << fileName  // 복사할 파일명
+         << "/nfl" << "/ndl" << "/njh" << "/njs" << "/nc" << "/ns"
+         << "/bytes" << "/r:0" << "/w:0";
+    args.prepend(QDir::toNativeSeparators(destDir));      // 대상
+    args.prepend(QDir::toNativeSeparators(sourceDir));    // 원본
+    args.prepend("robocopy");
+
+    QString command = args.join(" ");
+    logger.log("[INFO] Starting robocopy: " + command);
+
+    connect(process, &QProcess::readyReadStandardOutput, this, [=]() {
+        QString output = process->readAllStandardOutput();
+        logger.log("[robocopy stdout]\n" + output);
+
+        static const QRegularExpression regex(R"(\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+))");
+        QRegularExpressionMatch match = regex.match(output);
+        if (match.hasMatch()) {
+            qint64 totalBytes = match.captured(3).toLongLong();
+            qint64 copiedBytes = match.captured(4).toLongLong();
+            if (totalBytes > 0) {
+                int percent = static_cast<int>((copiedBytes * 100) / totalBytes);
+                emit progressChanged(percent);
+                logger.log(QString("[progress] %1 / %2 bytes (%3%)")
+                               .arg(copiedBytes).arg(totalBytes).arg(percent));
             }
-            if (!destinationFile.open(QIODevice::WriteOnly)) {
-                emit errorOccurred("Failed to create destination file.");
-                return;
-            }
-
-            qint64 totalSize = sourceFile.size();
-            qint64 copiedSize = 0;
-            const qint64 bufferSize = 4096;
-            char buffer[bufferSize];
-
-            while (!sourceFile.atEnd()) {
-                if (cancelRequested) {
-                    emit errorOccurred("Copy operation canceled.");
-                    return;
-                }
-
-                qint64 bytesRead = sourceFile.read(buffer, bufferSize);
-                destinationFile.write(buffer, bytesRead);
-                copiedSize += bytesRead;
-                int progress = static_cast<int>((copiedSize * 100) / totalSize);
-
-                // ✅ UI 스레드에서 진행률 업데이트
-                QMetaObject::invokeMethod(this, "progressChanged", Qt::QueuedConnection, Q_ARG(int, progress));
-            }
-
-            emit downloadCompleted(destinationPath);
-        } catch (...) {
-            emit errorOccurred("Unknown error occurred during file copy.");
         }
     });
+
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            this, [=](int exitCode, QProcess::ExitStatus) {
+                if (exitCode <= 7) {
+                    emit progressChanged(100);
+                    emit downloadCompleted(destinationPath);
+                    logger.log("[INFO] robocopy finished successfully. File copied to: " + destinationPath);
+                } else {
+                    emit errorOccurred("robocopy failed. Exit code: " + QString::number(exitCode));
+                    logger.log("[ERROR] robocopy failed. Exit code: " + QString::number(exitCode));
+                }
+                process->deleteLater();
+            });
+
+    process->start("cmd.exe", QStringList() << "/c" << command);
 }
 
-// ✅ 로컬 → USB 복사 (비동기 처리, `QThreadPool` 사용 가능)
+
+// ✅ 로컬 → USB 복사 (`copyToUsb`)
 void OsFileManager::copyToUsb(const QString &localPath, const QString &usbPath) {
-    cancelRequested = false;
-
-    QThreadPool::globalInstance()->start([=]() {
-        try {
-            QFile sourceFile(localPath);
-            QFile destinationFile(usbPath);
-
-            if (!sourceFile.open(QIODevice::ReadOnly)) {
-                emit errorOccurred("Failed to open local file.");
-                return;
-            }
-            if (!destinationFile.open(QIODevice::WriteOnly)) {
-                emit errorOccurred("Failed to create USB file.");
-                return;
-            }
-
-            qint64 totalSize = sourceFile.size();
-            qint64 copiedSize = 0;
-            const qint64 bufferSize = 4096;
-            char buffer[bufferSize];
-
-            while (!sourceFile.atEnd()) {
-                if (cancelRequested) {
-                    emit errorOccurred("Copy operation canceled.");
-                    return;
-                }
-
-                qint64 bytesRead = sourceFile.read(buffer, bufferSize);
-                destinationFile.write(buffer, bytesRead);
-                copiedSize += bytesRead;
-                int progress = static_cast<int>((copiedSize * 100) / totalSize);
-
-                // ✅ UI 스레드에서 진행률 업데이트
-                QMetaObject::invokeMethod(this, "progressChanged", Qt::QueuedConnection, Q_ARG(int, progress));
-            }
-
-            emit uploadCompleted(usbPath);
-        } catch (...) {
-            emit errorOccurred("Unknown error occurred during file copy.");
+    logger.execute([=]() {
+        if (!QFileInfo::exists(localPath)) {
+            emit errorOccurred("Error: Local file does not exist.");
+            return;
         }
+
+        QString usbDirPath = QFileInfo(usbPath).absolutePath();
+        QDir usbDir(usbDirPath);
+        if (!usbDir.exists()) {
+            usbDir.mkpath(usbDirPath);
+        }
+
+        QStorageInfo usbStorage(usbPath);
+        if (usbStorage.isValid() && usbStorage.bytesAvailable() < QFileInfo(localPath).size()) {
+            emit errorOccurred("Error: Not enough space on USB drive.");
+            return;
+        }
+
+        QProcess *process = new QProcess(this);
+
+        static const QRegularExpression robocopyProgressRegex(R"(\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+))");
+
+        QString sourceDir = QFileInfo(localPath).absolutePath();
+        QString fileName = QFileInfo(localPath).fileName();
+        QString destDir = QFileInfo(usbPath).absolutePath();
+
+        QStringList args;
+        args << fileName << "/COPY" << "/Z" << "/NFL" << "/NDL" << "/NJH" << "/NJS" << "/NC" << "/NS" << "/BYTES" << "/R:0" << "/W:0";
+        args.prepend(QDir::toNativeSeparators(destDir));
+        args.prepend(QDir::toNativeSeparators(sourceDir));
+        args.prepend("robocopy");
+
+        logger.execute([=]() {
+            qDebug() << "[INFO] robocopy to USB command:" << args.join(" ");
+        });
+
+        connect(process, &QProcess::readyReadStandardOutput, this, [=]() {
+            QString output = process->readAllStandardOutput();
+            logger.execute([&]() { qDebug() << "[robocopy stdout]" << output; });
+
+            QRegularExpressionMatch match = robocopyProgressRegex.match(output);
+            if (match.hasMatch()) {
+                qint64 totalBytes = match.captured(3).toLongLong();
+                qint64 copiedBytes = match.captured(4).toLongLong();
+
+                if (totalBytes > 0) {
+                    int percent = static_cast<int>((copiedBytes * 100) / totalBytes);
+                    emit progressChanged(percent);
+                }
+            }
+        });
+
+        connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [=](int exitCode, QProcess::ExitStatus status) {
+            if (exitCode <= 7) {
+                emit progressChanged(100);
+                emit uploadCompleted(usbPath);
+                logger.execute([&]() { qDebug() << "[INFO] File copy to USB completed: " << usbPath; });
+            } else {
+                emit errorOccurred("File copy to USB failed. Exit code: " + QString::number(exitCode));
+            }
+            process->deleteLater();
+        });
+
+        process->start("cmd.exe", QStringList() << "/c" << args.join(" "));
     });
 }
+
 
 // ✅ URL 다운로드
 void OsFileManager::downloadFromUrl(const QString &url, const QString &savePath) {
@@ -142,7 +188,6 @@ void OsFileManager::handleDownloadProgress() {
     QByteArray output = downloadProcess->readAllStandardOutput();
     QString progressData = QString::fromLocal8Bit(output).trimmed();
 
-    // ✅ 정규 표현식을 static 변수로 변경하여 성능 최적화
     static const QRegularExpression progressRegex(R"(\s*(\d+)%\s*)");
     QRegularExpressionMatch match = progressRegex.match(progressData);
 

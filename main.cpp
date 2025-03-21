@@ -10,7 +10,7 @@
 #include "wifimonitor.h"
 #include "loggingdecorator.h"
 #include "appguard.h"
-#include "OsFileManager.h"
+#include "osfileManager.h"
 
 //#include "main.moc"
 
