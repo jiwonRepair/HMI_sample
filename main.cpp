@@ -11,6 +11,7 @@
 #include "loggingdecorator.h"
 #include "appguard.h"
 #include "osfileManager.h"
+#include "wifioptimizer.h"
 
 //#include "main.moc"
 
@@ -26,11 +27,13 @@ int main(int argc, char *argv[]) {
     HardwareStatusModel hardwareStatusModel;
     WifiMonitor wifiMonitor;
     OsFileManager osFileManager;
+    WifiOptimizer wifiOptimizer;
 
     LoggingDecorator logger("HMI Application");
 
     // ✅ 예외 처리를 감싸서 QML 컨텍스트에 객체 등록
     logger.execute([&]() {
+        engine.rootContext()->setContextProperty("wifiOptimizer", &wifiOptimizer);
         engine.rootContext()->setContextProperty("osFileManager", &osFileManager);
         engine.rootContext()->setContextProperty("pageManager", &pageManager);
         engine.rootContext()->setContextProperty("cpuMonitor", &cpuMonitor);

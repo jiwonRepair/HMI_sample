@@ -1,33 +1,36 @@
 import QtQuick 2.15
 import QtQuick.Controls
-import QtCharts
-//title: "Wi-Fi Optimizer Demo"
 
 Item {
     width: parent.width
     height: parent.height
+
+    property var booster: wifiOptimizer
 
     Rectangle {
         width: parent.width
         height: parent.height
         color: "lightcoral"
 
-        WifiOptimizer {
-            id: booster
-            onWifiStatusChanged: updateStatus()
-            onGraphDataUpdated: updateChart()
-            onPredictionResult: message => predictionLabel.text = message
+        Connections {
+            target: booster
+
+            function onWifiStatusChanged() {
+                updateStatus();
+            }
+
+            function onGraphDataUpdated() {
+                chart.requestPaint();
+            }
+
+            function onPredictionResult(message) {
+                predictionLabel.text = message;
+            }
         }
+
 
         function updateStatus() {
             statusText.text = "📶 " + booster.ssid + " — " + booster.signalStrength + "%";
-        }
-
-        function updateChart() {
-            series.clear();
-            var data = booster.signalHistory;
-            for (var i = 0; i < data.length; ++i)
-                series.append(i, data[i]);
         }
 
         Column {
@@ -47,35 +50,34 @@ Item {
                 text: "예측 결과 없음"
             }
 
-            ChartView {
+            Canvas {
+                id: chart
                 width: 500
                 height: 200
-                theme: ChartView.ChartThemeLight
                 antialiasing: true
+                onPaint: {
+                    var ctx = getContext("2d");
+                    ctx.clearRect(0, 0, width, height);
 
-                LineSeries {
-                    id: series
-                    name: "신호 강도 (%)"
+                    var data = booster.signalHistory;
+                    if (!data || data.length < 2)
+                        return;
+
+                    ctx.strokeStyle = "white";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+
+                    for (var i = 0; i < data.length; ++i) {
+                        var x = i * width / (data.length - 1);
+                        var y = height - (data[i] / 100.0 * height);
+                        if (i === 0)
+                            ctx.moveTo(x, y);
+                        else
+                            ctx.lineTo(x, y);
+                    }
+
+                    ctx.stroke();
                 }
-
-                ValueAxis {
-                    id: axisX
-                    min: 0
-                    max: 10
-                    titleText: "측정 횟수"
-                }
-
-                ValueAxis {
-                    id: axisY
-                    min: 0
-                    max: 100
-                    titleText: "신호 세기"
-                }
-
-                axes: [
-                    AxisPair { axis: axisX; orientation: Qt.Horizontal },
-                    AxisPair { axis: axisY; orientation: Qt.Vertical }
-                ]
             }
 
             Row {

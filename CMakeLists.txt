@@ -5,7 +5,7 @@ project(test4 VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ✅ Qt 라이브러리 찾기 (Gui, Qml, Quick 추가)
-find_package(Qt6 REQUIRED COMPONENTS Gui Qml Quick Test Core Concurrent Charts)
+find_package(Qt6 REQUIRED COMPONENTS Gui Qml Quick Test Core Concurrent)
 
 
 
@@ -37,6 +37,7 @@ qt_add_executable(apptest4
     diskmonitor.h diskmonitor.cpp
     hardwarestatusmodel.h hardwarestatusmodel.cpp
     wifimonitor.h wifimonitor.cpp
+    wifioptimizer.h wifioptimizer.cpp
 )
 
 # ✅ QML 모듈 추가
@@ -57,12 +58,8 @@ qt_add_qml_module(apptest4
     RESOURCES generate_onnx_model.py
 )
 
-# ONNX Runtime (CPU-only, Lite API)
-include_directories("onnxruntime-lite/include")
-link_directories("onnxruntime-lite/lib")
-
 # ✅ Qt 라이브러리 링크 추가
-target_link_libraries(apptest4 PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Core Qt6::Concurrent Qt6::Charts onnxruntime)
+target_link_libraries(apptest4 PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Core Qt6::Concurrent)
 
 # ✅ Windows 시스템 라이브러리 추가 (🚀 오류 해결)
 if(WIN32)
