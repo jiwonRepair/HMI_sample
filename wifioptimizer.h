@@ -41,12 +41,22 @@ private:
     void evaluatePrediction(float value);
     float runOnnxPrediction();  // 현재는 평균 기반 가상 예측
     void sendToFastApi();
+    void adjustMTU();
+    void adjustRTO();
+    void applySelectiveACK();
+    void enableFEC();
 
     QString m_ssid;
     int m_signalStrength;
     QVector<int> m_signalHistory;
 
     QNetworkAccessManager* m_networkManager;
+
+    QTimer m_deepLearningTimer;
+    QTimer m_drawTimer;
+    QTimer m_signalTimer;
+    QTimer m_optimizerTimer;
+    QTimer m_saveSignalHistoryTimer;
 };
 
 #endif // WIFI_OPTIMIZER_H

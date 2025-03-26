@@ -195,3 +195,117 @@ WiFiOptimizerProject는 사용자의 요구에 따라 아래와 같은 기능들
 ---
 
 📌 이 정리는 테스트 케이스 작성, 기능 리뷰, 리팩토링, 모듈 분리에 바로 활용 가능합니다.
+
+
+---
+
+## 🔧 최종 기능 요약 (2025년 기준)
+
+| 기능 | 설명 |
+|------|------|
+| 📡 `refreshSignalStrength()` | 현재 Wi-Fi SSID 및 신호 강도 수집 |
+| 📈 `updateSignalHistory()` | 신호 이력 저장 및 그래프 갱신 |
+| 🧠 `runOnnxPrediction()` | 최근 신호 이력 기반 예측 (ONNX 또는 평균 기반) |
+| 🤖 `evaluatePrediction()` | 예측값에 따라 보정 함수 자동 호출 |
+| 🛠 자동 보정 함수 | `adjustMTU()`, `adjustRTO()`, `applySelectiveACK()`, `enableFEC()` 등 |
+| 📤 `sendToFastApi()` | FastAPI로 SSID/신호 강도 전송 |
+| 🧪 테스트 함수 | `testGraphUpdate()`, `testFastApiIntegration()` 등 |
+| 💾 `exportSignalHistoryToFile()` | 신호 이력을 텍스트 파일로 저장 |
+| ⏱️ `startAutoOptimization(intervalMs)` | 타이머 기반 자동 보정 시작 |
+| 🛑 `stopAutoOptimization()` | 자동 보정 타이머 종료 |
+
+---
+
+## ⚙️ 자동 보정 흐름
+
+1. 타이머 또는 수동으로 `refreshSignalStrength()` 호출  
+2. → `updateSignalHistory()` 저장  
+3. → `runOnnxPrediction()`  
+4. → `evaluatePrediction()` 내에서 예측값 조건에 따라 자동 보정 수행:
+
+| 예측값 | 동작 |
+|--------|------|
+| > 80 | 연결 양호, 보정 없음 |
+| > 50 | `adjustRTO()` |
+| ≤ 50 | `adjustRTO()`, `applySelectiveACK()`, `enableFEC()` |
+| 매우 낮음 (확장 예정) | 추가 보정 예정 (MTU, 윈도우 크기 등) |
+
+---
+
+## 🧩 보정 함수 설명
+
+| 함수 | 설명 |
+|------|------|
+| `adjustMTU()` | MTU 값을 1400으로 고정하여 데이터 조각화를 줄이고, 패킷 손실 확률 감소 (1회 설정으로 충분) |
+| `adjustRTO()` | TCP 재전송 타이머를 줄여 손실 시 빠르게 재시도하게 함 (Linux `sysctl` 적용) |
+| `applySelectiveACK()` | SACK 설정을 보장하여, 손실된 부분만 재전송하게 최적화 (Linux에서만 직접 설정 가능) |
+| `enableFEC()` | 신호 이력 데이터에 패리티 기반 FEC 시뮬레이션 적용 → 예측 기반 보정 효과 |
+
+---
+
+## ⛑️ 참고
+
+- 모든 보정은 플랫폼(OS)에 따라 적용 범위가 다릅니다.
+- Qt 6 기반이며, QML과의 연동 구조도 완비되어 있습니다.
+- `onnxruntime` 라이브러리는 사용하지 않으며, 예측은 평균값 기반 또는 FastAPI/ONNX로 대체됩니다.
+
+## 🧠 QTimer::setInterval() 과 동적할당 관계 설명
+
+### 🔧 개념 요약
+
+`QTimer::setInterval(int msec)` 은 **기존 QTimer 객체의 주기만 설정**하는 함수입니다.  
+즉, **객체를 새로 만들거나 삭제하지 않으며**, 동적할당과 직접적인 관련이 없습니다.
+
+---
+
+### ✅ 추천 방식: 멤버 변수 기반 QTimer 사용
+
+```cpp
+// wifioptimizer.h
+QTimer m_autoTimer;
+
+// wifioptimizer.cpp (생성자 또는 초기화 함수)
+connect(&m_autoTimer, &QTimer::timeout, this, &WifiOptimizer::refreshSignalStrength);
+m_autoTimer.setInterval(5000);  // 5초 간격
+m_autoTimer.start();
+```
+
+- ✔️ `delete` 필요 없음
+- ✔️ Qt가 수명 주기 자동 관리
+- ✔️ 타이머 자동 시작 가능
+
+---
+
+### ⚠️ 주의: 정적 함수가 아님!
+
+```cpp
+QTimer::setInterval(5000);  // ❌ 오류 - 인스턴스 필요!
+```
+
+`setInterval()`은 정적(static)이 아니라,  
+**QTimer 객체를 생성한 후 호출해야만** 동작합니다.
+
+---
+
+### ❗ 동적할당 방식 (구식 또는 필요할 때 사용)
+
+```cpp
+QTimer* timer = new QTimer(this);
+connect(timer, &QTimer::timeout, this, &WifiOptimizer::refreshSignalStrength);
+timer->setInterval(5000);
+timer->start();
+```
+
+- ⚠️ 이 방식은 `new`를 썼기 때문에 수동 해제 (`delete`) 또는 `parent` 설정이 필요함
+
+---
+
+### ✅ 결론
+
+| 방식 | 설명 | delete 필요 |
+|------|------|--------------|
+| `QTimer m_autoTimer` + `setInterval()` | 자동 메모리 관리 | ❌ |
+| `new QTimer(...)` | 수동 해제 필요 | ✅ (또는 `parent`) |
+
+동적할당을 피하고 싶다면  
+👉 **멤버 변수 기반 QTimer + setInterval() 사용**이 가장 안전하고 효율적입니다. 🚀

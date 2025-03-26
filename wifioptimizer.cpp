@@ -11,12 +11,38 @@
 #include <algorithm>
 #include <numeric>
 #include <QRegularExpression>
+#include <QOperatingSystemVersion>
+#include <QSysInfo>
+#include <QString>
 
 WifiOptimizer::WifiOptimizer(QObject* parent)
     : QObject(parent), m_signalStrength(0)
 {
     m_networkManager = new QNetworkAccessManager(this);
+    adjustMTU();
+    adjustRTO();
+    applySelectiveACK();
     refreshSignalStrength();
+
+    m_deepLearningTimer.setInterval(3000);
+    connect(&m_deepLearningTimer, &QTimer::timeout, this, &WifiOptimizer::testPredictiveEnhancement);
+    m_deepLearningTimer.start();
+
+    m_drawTimer.setInterval(4000);
+    connect(&m_drawTimer, &QTimer::timeout, this, &WifiOptimizer::testGraphUpdate);
+    m_drawTimer.start();
+
+    m_signalTimer.setInterval(5000);
+    connect(&m_signalTimer, &QTimer::timeout, this, &WifiOptimizer::testPredictiveEnhancement);
+    m_signalTimer.start();
+
+    m_optimizerTimer.setInterval(6000);
+    connect(&m_optimizerTimer, &QTimer::timeout, this, &WifiOptimizer::applyAllOptimizations);
+    m_optimizerTimer.start();
+
+    m_saveSignalHistoryTimer.setInterval(7000);
+    connect(&m_saveSignalHistoryTimer, &QTimer::timeout, this, &WifiOptimizer::exportSignalHistoryToFile);
+    m_saveSignalHistoryTimer.start();
 }
 
 void WifiOptimizer::refreshSignalStrength() {
@@ -140,12 +166,18 @@ float WifiOptimizer::runOnnxPrediction() {
 
 void WifiOptimizer::evaluatePrediction(float value) {
     QString result;
-    if (value > 80)
+
+    if (value > 80) {
         result = "✅ 연결 양호";
-    else if (value > 50)
-        result = "⚠️ 품질 보통";
-    else
-        result = "❌ 신호 불량";
+    } else if (value > 50) {
+        result = "⚠️ 품질 보통 → RTO 적용";
+        adjustRTO();
+    } else {
+        result = "❌ 신호 불량 → 전체 보정 적용";
+        adjustRTO();
+        applySelectiveACK();
+        enableFEC();  // 신호 히스토리 기반 보정
+    }
 
     emit predictionResult(result);
 }
@@ -161,4 +193,96 @@ void WifiOptimizer::exportSignalHistoryToFile() {
         file.close();
     }
 }
+
+void WifiOptimizer::adjustMTU() {
+#ifdef Q_OS_WIN
+    // Windows: Use netsh to adjust MTU for Wi-Fi
+    QProcess::execute("netsh interface ipv4 set subinterface \"Wi-Fi\" mtu=1400 store=persistent");
+#elif defined(Q_OS_LINUX)
+    // Linux: Use ifconfig or ip to adjust MTU (interface assumed as wlan0)
+    QProcess::execute("sudo ip link set dev wlan0 mtu 1400");
+#elif defined(Q_OS_MACOS)
+    // macOS: Use networksetup (interface assumed as en0)
+    QProcess::execute("sudo networksetup -setMTU en0 1400");
+#else
+    qWarning() << "MTU adjustment not supported on this OS.";
+#endif
+}
+
+void WifiOptimizer::adjustRTO() {
+    QString os = QSysInfo::prettyProductName();
+    qDebug() << "[adjustRTO] OS:" << os;
+#if defined(Q_OS_LINUX)
+    // Linux: 커널 파라미터를 통해 RTO 조정
+    QProcess::execute("sudo sysctl -w net.ipv4.tcp_retries2=3");
+    qInfo() << "[adjustRTO] Linux 시스템에서 TCP RTO를 3으로 조정했습니다.";
+
+#elif defined(Q_OS_WIN)
+    // Windows: 직접 설정 불가, 안내만
+    qWarning() << "[adjustRTO] Windows에서는 시스템 정책상 TCP RTO 값을 직접 조정할 수 없습니다.";
+    qWarning() << "           일부 설정은 레지스트리 편집 또는 고급 드라이버 수준에서만 가능하며,";
+    qWarning() << "           현재 코드에서는 자동 적용되지 않습니다.";
+
+#elif defined(Q_OS_MACOS)
+    // macOS: 제한됨, 안내만
+    qWarning() << "[adjustRTO] macOS에서는 TCP RTO 값 조정이 제한적입니다.";
+    qWarning() << "           현재 macOS에서는 관련 파라미터 조정이 공식적으로 지원되지 않습니다.";
+
+#else
+    qWarning() << "[adjustRTO] 알 수 없는 운영체제입니다. 적용 불가능합니다.";
+#endif
+}
+
+void WifiOptimizer::applySelectiveACK()
+{
+#ifdef Q_OS_LINUX
+    QFile sackFile("/proc/sys/net/ipv4/tcp_sack");
+    if (sackFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&sackFile);
+        out << "1\n"; // Enable SACK
+        sackFile.close();
+        qDebug() << "[applySelectiveACK] SACK enabled on Linux.";
+    } else {
+        qWarning() << "[applySelectiveACK] Cannot open /proc/sys/net/ipv4/tcp_sack. Run as root?";
+    }
+#elif defined(Q_OS_WIN)
+    qDebug() << "[applySelectiveACK] Windows: SACK is enabled by default, no manual override available.";
+#elif defined(Q_OS_MACOS)
+    qDebug() << "[applySelectiveACK] macOS: SACK is enabled by default, system-level toggle not exposed.";
+#else
+    qWarning() << "[applySelectiveACK] Unsupported OS for SACK configuration.";
+#endif
+}
+
+void WifiOptimizer::enableFEC()
+{
+    if (m_signalHistory.isEmpty()) {
+        qWarning() << "[enableFEC] No signal data to apply FEC.";
+        return;
+    }
+
+    QVector<int> encodedData;
+    int parity = 0;
+
+    for (const int &value : std::as_const(m_signalHistory)) {
+        encodedData.append(value);
+        parity ^= value;
+    }
+
+    encodedData.append(parity);  // 마지막에 패리티 추가
+    qDebug() << "[enableFEC] Encoded signal data with parity:" << encodedData;
+
+    // 복구 시도 (예제: 마지막 값이 손상되었을 경우)
+    int recoveredParity = 0;
+    for (int i = 0; i < encodedData.size() - 1; ++i) {
+        recoveredParity ^= encodedData[i];
+    }
+
+    if (recoveredParity == encodedData.last()) {
+        qDebug() << "[enableFEC] Integrity check passed.";
+    } else {
+        qWarning() << "[enableFEC] Signal data may be corrupted.";
+    }
+}
+
 

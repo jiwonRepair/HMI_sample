@@ -27,7 +27,7 @@ torch.onnx.export(
 # 0. pip install torch numpy onnx
 
 # 1. ONNX 모델 생성 (한 번만)
-# python export_wifi_predictor.py
+# python generate_onnx_model.py ( export_wifi_predictor.py )
 
 # 2. FastAPI 서버 실행
 # python fastapi_server.py
