@@ -24,6 +24,7 @@ torch.onnx.export(
     opset_version=11
 )
 
+# 0. pip install torch numpy onnx
 
 # 1. ONNX 모델 생성 (한 번만)
 # python export_wifi_predictor.py
