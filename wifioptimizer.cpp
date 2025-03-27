@@ -1,3 +1,7 @@
+#ifdef _WIN32
+#include <winsock2.h>  // ✅ 가장 먼저 포함
+#endif
+
 #include "wifioptimizer.h"
 #include <QProcess>
 #include <QDebug>
@@ -14,9 +18,11 @@
 #include <QOperatingSystemVersion>
 #include <QSysInfo>
 #include <QString>
+#include <atomic>
+#include "LibuvFileExporter.h"  // ✅ 추가 필요!
 
 WifiOptimizer::WifiOptimizer(QObject* parent)
-    : QObject(parent), m_signalStrength(0)
+    : QObject(parent), m_signalStrength(0), m_fileExporter(this)
 {
     m_networkManager = new QNetworkAccessManager(this);
     adjustMTU();
@@ -182,17 +188,45 @@ void WifiOptimizer::evaluatePrediction(float value) {
     emit predictionResult(result);
 }
 
+// void WifiOptimizer::exportSignalHistoryToFile() {
+//     QString filename = QCoreApplication::applicationDirPath() + "/signal_history.txt";
+//     QFile file(filename);
+//     if (file.open(QIODevice::WriteOnly)) {
+//         QTextStream stream(&file);
+//         const QVector<int>& history = m_signalHistory;
+//         for (int val : history)
+//             stream << val << "\n";
+//         file.close();
+//     }
+// }
+
 void WifiOptimizer::exportSignalHistoryToFile() {
-    QString filename = QCoreApplication::applicationDirPath() + "/signal_history.txt";
-    QFile file(filename);
-    if (file.open(QIODevice::WriteOnly)) {
-        QTextStream stream(&file);
-        const QVector<int>& history = m_signalHistory;
-        for (int val : history)
-            stream << val << "\n";
-        file.close();
+    static std::atomic_bool inProgress = false;
+    if (inProgress.exchange(true)){
+        qDebug() << "inProgress.exchange";
+        return;
     }
+    QString filename = QCoreApplication::applicationDirPath() + "/signal_history.txt";
+
+    static LibuvFileExporter exporter;
+
+    m_fileExporter.writeCsvAsync<int>(
+        m_signalHistory,
+        filename,
+        [](const int& v) { return QString::number(v); },
+        [this](int percent) {
+            qDebug() << "[progress] " << percent;
+            emit progressChanged(percent);
+        },
+        [this]() {
+            qDebug() << "✅ saveFinished emitted!";
+            emit saveFinished();
+            inProgress = false;
+        }
+        );
+
 }
+
 
 void WifiOptimizer::adjustMTU() {
 #ifdef Q_OS_WIN

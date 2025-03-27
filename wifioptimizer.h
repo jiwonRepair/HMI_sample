@@ -8,6 +8,7 @@
 #include <QNetworkReply>
 #include <QProcess>
 #include <QTimer>
+#include "LibuvFileExporter.h"
 
 class WifiOptimizer : public QObject
 {
@@ -35,6 +36,10 @@ signals:
     void graphDataUpdated();
     void predictionResult(const QString& message);
 
+    void progressChanged(int percent);  // 진행률 알림
+    void saveFinished();                // 저장 완료 알림
+
+
 private:
     void updateSignalStrength();
     void updateSignalHistory();
@@ -57,6 +62,8 @@ private:
     QTimer m_signalTimer;
     QTimer m_optimizerTimer;
     QTimer m_saveSignalHistoryTimer;
+
+    LibuvFileExporter m_fileExporter;  // ✅ 클래스 내부 전용
 };
 
 #endif // WIFI_OPTIMIZER_H

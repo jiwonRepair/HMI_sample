@@ -84,6 +84,53 @@ Item {
                     width: parent.width
                     onClicked: booster.exportSignalHistoryToFile()
                 }
+
+                Item {
+                    width: 400
+                    height: 100
+
+                    property int progressValue: 0
+
+                    Connections {
+                        target: wifiOptimizer
+                        function onProgressChanged(p) {
+                            progressValue = p
+                        }
+                        function onSaveFinished() {
+                            console.log("✅ 저장 완료")
+                            progressValue = 100
+                        }
+                    }
+
+                    ProgressBar {
+                        id: progressBar
+                        width: parent.width
+                        height: 20
+                        from: 0
+                        to: 100
+                        value: progressValue
+
+                        background: Rectangle {
+                            color: "lightgray"
+                            radius: 5
+                        }
+
+                        contentItem: Item {
+                            Rectangle {
+                                width: progressBar.visualPosition * progressBar.width
+                                height: progressBar.height
+                                color: progressValue < 100 ? "green" : "white"
+                                radius: 5
+                            }
+                            Text {
+                                text: progressValue + "%"
+                                anchors.centerIn: parent
+                                font.bold: true
+                                color: "black"
+                            }
+                        }
+                    }
+                }
             }
 
         }
