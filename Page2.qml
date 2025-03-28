@@ -93,12 +93,18 @@ Item {
 
                     Connections {
                         target: wifiOptimizer
+
                         function onProgressChanged(p) {
                             progressValue = p
                         }
+
                         function onSaveFinished() {
                             console.log("✅ 저장 완료")
                             progressValue = 100
+                        }
+
+                        function onSaveCancelled() {
+                            console.log("🛑 저장이 취소되었습니다")
                         }
                     }
 

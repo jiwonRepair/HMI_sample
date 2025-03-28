@@ -9,6 +9,9 @@
 #include <QProcess>
 #include <QTimer>
 #include "LibuvFileExporter.h"
+#include <QFuture>
+#include <QFutureWatcher>
+#include <QtConcurrent>
 
 class WifiOptimizer : public QObject
 {
@@ -39,6 +42,7 @@ signals:
     void progressChanged(int percent);  // 진행률 알림
     void saveFinished();                // 저장 완료 알림
 
+    void saveCancelled();
 
 private:
     void updateSignalStrength();
@@ -50,6 +54,7 @@ private:
     void adjustRTO();
     void applySelectiveACK();
     void enableFEC();
+    void cancelExport();
 
     QString m_ssid;
     int m_signalStrength;
@@ -64,6 +69,10 @@ private:
     QTimer m_saveSignalHistoryTimer;
 
     LibuvFileExporter m_fileExporter;  // ✅ 클래스 내부 전용
+
+    QFuture<void> m_exportFuture;                  // ✅ 현재 실행 중인 저장
+    QFutureWatcher<void> m_exportWatcher;          // ✅ 완료/취소 감시용
+    std::atomic_bool m_cancelRequested = false;    // ✅ 중단 요청 flag
 };
 
 #endif // WIFI_OPTIMIZER_H

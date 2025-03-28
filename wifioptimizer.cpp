@@ -196,31 +196,51 @@ void WifiOptimizer::evaluatePrediction(float value) {
 // }
 
 void WifiOptimizer::exportSignalHistoryToFile() {
-    qDebug() << "[exportSignalHistoryToFile] called";
-
     if (m_fileExporter.isInProgress()) {
         qDebug() << "⚠️ exporter busy";
         return;
     }
 
+    // 취소 요청 초기화
+    m_cancelRequested.store(false);
+
     QString filename = QCoreApplication::applicationDirPath() + "/signal_history.txt";
 
-    m_fileExporter.writeCsvAsync<int>(
-        m_signalHistory,
-        filename,
-        [](const int& v) { return QString::number(v); },
-        [this](int percent) {
-            qDebug() << "[progress] " << percent;
-            emit progressChanged(percent);
-        },
-        [this]() {
-            qDebug() << "✅ saveFinished emitted!";
-            emit saveFinished();
-        }
-        );
+    m_exportFuture = QtConcurrent::run([=]() {
+        m_fileExporter.writeCsvAsync<int>(
+            m_signalHistory,
+            filename,
+            [](const int& v) { return QString::number(v); },  // ✅ formatter (3rd)
+            [this](int percent) {
+                if (m_cancelRequested.load()) return;  // ✅ 취소 확인
+                QMetaObject::invokeMethod(this, [=]() {
+                    emit progressChanged(percent);
+                }, Qt::QueuedConnection);
+            },
+            [this]() {
+                if (m_cancelRequested.load()) {
+                    QMetaObject::invokeMethod(this, [=]() {
+                        emit saveCancelled();
+                    }, Qt::QueuedConnection);
+                    return;
+                }
+                QMetaObject::invokeMethod(this, [=]() {
+                    emit saveFinished();
+                }, Qt::QueuedConnection);
+            }
+            );
+    });
+
+    // 완료 감시 연결
+    m_exportWatcher.setFuture(m_exportFuture);
 }
 
-
+void WifiOptimizer::cancelExport() {
+    if (m_exportFuture.isRunning()) {
+        m_cancelRequested.store(true);
+        qDebug() << "❗ 저장 작업 취소 요청됨.";
+    }
+}
 
 void WifiOptimizer::adjustMTU() {
 #ifdef Q_OS_WIN
