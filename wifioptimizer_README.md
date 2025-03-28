@@ -327,3 +327,21 @@ writeCsvAsync()는 동기적으로 동작하지만 저장 시간이 매우 짧�
 Qt/QML과의 연결은 유지되며, 저장 완료 후 saveFinished 시그널로 QML UI 업데이트
 
 📌 libuv의 비동기 구조는 유지하면서도, Qt 구조에 최적화된 경량 동기 처리 방식으로 통합
+
+
+✅ 완전한 비동기 + 취소 가능한 signalHistory 저장 기능 추가
+전체 저장 작업이 QtConcurrent::run()을 통해 백그라운드 스레드에서 완전히 비동기적으로 실행되도록 개선
+
+UI 스레드와 분리되어 저장 중에도 UI 반응성 완전 유지
+
+저장 작업 상태를 추적하기 위해 QFuture 및 QFutureWatcher 도입
+
+cancelExport() 함수 추가로 저장 중 중간 취소 요청을 안전하게 처리
+
+취소 시에는 저장을 즉시 중단하고, saveCancelled 시그널을 통해 QML에 알려줌
+
+진행률(progressChanged), 완료(saveFinished), 취소(saveCancelled) 등 모든 시그널은 UI 메인 스레드에서 안전하게 emit
+
+내부적으로 std::atomic_bool을 사용해 멀티스레드 환경에서도 데이터 충돌 없이 중단 가능
+
+✔ 이로써 사용자 인터랙션 중에도 끊김 없이 작동하는, 완전한 비동기 저장 기능이 완성되었습니다.
