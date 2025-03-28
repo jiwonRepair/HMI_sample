@@ -309,3 +309,21 @@ timer->start();
 
 동적할당을 피하고 싶다면  
 👉 **멤버 변수 기반 QTimer + setInterval() 사용**이 가장 안전하고 효율적입니다. 🚀
+
+
+✅ Libuv 기반 신호 이력 저장 기능 개선
+QTimer나 동적 할당 없이 uv_run() 한 줄로 libuv 이벤트 루프 처리
+
+writeCsvAsync() 호출 시 필요한 순간에만 libuv 처리 → CPU 낭비 없음
+
+파일 저장 완료 시 onClose() 내부에서 _context.reset() 자동 실행
+
+중복 실행 방지 상태(exporter busy)가 무한 지속되는 문제 해결
+
+writeCsvAsync()는 동기적으로 동작하지만 저장 시간이 매우 짧아 UI는 영향 없음
+
+.txt 포맷으로 signalHistory 저장 → 실제 포맷은 줄 단위 텍스트
+
+Qt/QML과의 연결은 유지되며, 저장 완료 후 saveFinished 시그널로 QML UI 업데이트
+
+📌 libuv의 비동기 구조는 유지하면서도, Qt 구조에 최적화된 경량 동기 처리 방식으로 통합
