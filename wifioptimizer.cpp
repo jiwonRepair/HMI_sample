@@ -1,7 +1,3 @@
-#ifdef _WIN32
-#include <winsock2.h>  // ✅ 가장 먼저 포함
-#endif
-
 #include "wifioptimizer.h"
 #include <QProcess>
 #include <QDebug>
@@ -18,7 +14,6 @@
 #include <QOperatingSystemVersion>
 #include <QSysInfo>
 #include <QString>
-#include <atomic>
 #include "LibuvFileExporter.h"  // ✅ 추가 필요!
 
 WifiOptimizer::WifiOptimizer(QObject* parent)
@@ -201,14 +196,14 @@ void WifiOptimizer::evaluatePrediction(float value) {
 // }
 
 void WifiOptimizer::exportSignalHistoryToFile() {
-    static std::atomic_bool inProgress = false;
-    if (inProgress.exchange(true)){
-        qDebug() << "inProgress.exchange";
+    qDebug() << "[exportSignalHistoryToFile] called";
+
+    if (m_fileExporter.isInProgress()) {
+        qDebug() << "⚠️ exporter busy";
         return;
     }
-    QString filename = QCoreApplication::applicationDirPath() + "/signal_history.txt";
 
-    static LibuvFileExporter exporter;
+    QString filename = QCoreApplication::applicationDirPath() + "/signal_history.txt";
 
     m_fileExporter.writeCsvAsync<int>(
         m_signalHistory,
@@ -221,11 +216,10 @@ void WifiOptimizer::exportSignalHistoryToFile() {
         [this]() {
             qDebug() << "✅ saveFinished emitted!";
             emit saveFinished();
-            inProgress = false;
         }
         );
-
 }
+
 
 
 void WifiOptimizer::adjustMTU() {

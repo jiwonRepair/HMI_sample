@@ -15,6 +15,10 @@
 #ifndef LIBUV_FILE_EXPORTER_H
 #define LIBUV_FILE_EXPORTER_H
 
+#ifdef _WIN32
+#include <winsock2.h>  // ✅ 반드시 windows.h보다 먼저
+#endif
+
 #include <QObject>
 #include <QString>
 #include <QVector>
@@ -35,6 +39,8 @@ public:
                        std::function<void(int)> onProgress = {},
                        std::function<void()> onComplete = {});
 
+    bool isInProgress() const { return _context.has_value(); }
+
 private:
     struct WriteContext {
         WriteContext() = default;
@@ -48,6 +54,9 @@ private:
         QString path;
         std::function<void(int)> onProgress;
         std::function<void()> onComplete;
+
+        QObject* qobject = nullptr;  // ✅ 이 줄 추가
+        LibuvFileExporter* owner = nullptr;  // ✅ 이 줄 추가!
     };
 
     std::optional<WriteContext> _context;

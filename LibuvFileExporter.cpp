@@ -51,6 +51,14 @@ void LibuvFileExporter::onWrite(uv_fs_t*) {
         qWarning() << "❗ [onWrite] ctx is null";
         return;
     }
+
+    if (ctx->lines.isEmpty()) {
+        qWarning() << "⚠️ 저장할 데이터 없음 → 즉시 파일 닫기";
+        ctx->close_req.data = ctx;
+        uv_fs_close(uv_default_loop(), &ctx->close_req, ctx->file, onClose);
+        return;
+    }
+
     if (ctx->index >= ctx->lines.size()) {
         qDebug() << "📦 파일 모두 작성 완료 → uv_fs_close 진입 예정";
         ctx->close_req.data = ctx;
@@ -62,8 +70,11 @@ void LibuvFileExporter::onWrite(uv_fs_t*) {
     uv_buf_t buf = uv_buf_init(line.data(), line.size());
     ctx->write_req.data = ctx;
     uv_fs_write(uv_default_loop(), &ctx->write_req, ctx->file, &buf, 1, -1, onWrite);
-    if (ctx->onProgress) ctx->onProgress(ctx->index * 100 / ctx->lines.size());
+
+    if (ctx->onProgress)
+        ctx->onProgress(ctx->index * 100 / ctx->lines.size());
 }
+
 
 void LibuvFileExporter::onClose(uv_fs_t* req) {
     auto* ctx = static_cast<WriteContext*>(req->data);
@@ -73,17 +84,24 @@ void LibuvFileExporter::onClose(uv_fs_t* req) {
     }
 
     qDebug() << "🔥 onClose 진입됨";
-    if (ctx->onProgress) ctx->onProgress(100);
 
-    if (!ctx->onComplete) {
-        qWarning() << "❌ onComplete가 nullptr입니다!";
-    } else {
-        qDebug() << "✅ onComplete 호출됨";
+    if (ctx->onProgress)
+        ctx->onProgress(100);
+
+    if (ctx->onComplete)
         ctx->onComplete();
-    }
 
     uv_fs_req_cleanup(req);
+
+    if (ctx->owner) {
+        ctx->owner->_context.reset();
+        qDebug() << "🧹 _context reset 완료 (owner 기반)";
+    } else {
+        qWarning() << "❗ owner가 nullptr입니다!";
+    }
 }
+
+
 
 template<typename T>
 void LibuvFileExporter::writeCsvAsync(const QVector<T>& data,
@@ -92,13 +110,17 @@ void LibuvFileExporter::writeCsvAsync(const QVector<T>& data,
                                       std::function<void(int)> onProgress,
                                       std::function<void()> onComplete) {
     _context.reset();
-    _context = std::optional<WriteContext>{};
+    _context = WriteContext{};  // 기본 생성자 방식
 
     if (!_context.has_value()) {
         qWarning() << "❗ [writeCsvAsync] _context 생성 실패";
         return;
     }
 
+    qDebug() << "[writeCsvAsync] 라인 수:" << data.size();
+
+    _context->qobject = this;
+    _context->owner = this;  // ✅ 반드시 필요
     _context->path = filePath;
     _context->onProgress = std::move(onProgress);
     _context->onComplete = std::move(onComplete);
@@ -107,6 +129,10 @@ void LibuvFileExporter::writeCsvAsync(const QVector<T>& data,
         _context->lines.append(formatter(item).toUtf8() + "\n");
 
     startWrite();
+
+    // ✅ 여기서 한 번 돌리고 끝 (필요한 만큼만)
+    uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 }
+
 
 template void LibuvFileExporter::writeCsvAsync<int>(const QVector<int>&, const QString&, std::function<QString(const int&)>, std::function<void(int)>, std::function<void()>);
