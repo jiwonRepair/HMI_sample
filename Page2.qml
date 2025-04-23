@@ -86,8 +86,8 @@ Item {
                 }
 
                 Item {
-                    width: 400
-                    height: 100
+                    width: parent.width
+                    height: parent.height
 
                     property int progressValue: 0
 

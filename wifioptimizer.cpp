@@ -14,6 +14,7 @@
 #include <QOperatingSystemVersion>
 #include <QSysInfo>
 #include <QString>
+#include <QtConcurrent/QtConcurrentRun>
 #include "LibuvFileExporter.h"  // ✅ 추가 필요!
 
 WifiOptimizer::WifiOptimizer(QObject* parent)

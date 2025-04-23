@@ -1,6 +1,10 @@
 #ifndef DISKMONITOR_H
 #define DISKMONITOR_H
 
+#ifdef _WIN32
+#include <winsock2.h>  // 반드시 windows.h 보다 먼저!
+#endif
+
 #include <QObject>
 #include <QTimer>
 #include <QDebug>

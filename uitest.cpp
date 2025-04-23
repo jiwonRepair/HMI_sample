@@ -1,3 +1,7 @@
+#ifdef _WIN32
+#include <winsock2.h>  // 반드시 windows.h 보다 먼저!
+#endif
+
 #include "uitest.h"
 #include <QQmlContext>
 #include <QTest>
@@ -10,6 +14,7 @@
 #include "diskmonitor.h"
 #include "hardwarestatusmodel.h"
 #include "wifimonitor.h"
+#include "wifioptimizer.h"
 #include <QSignalSpy>  // ✅ QSignalSpy 추가 (신호 감지 용도)
 
 // ✅ QML 및 객체 초기화 (테스트 시작 전에 실행됨)
@@ -29,6 +34,7 @@ void QmlTest::setUp()
     engine.rootContext()->setContextProperty("diskMonitor", new DiskMonitor(this));
     engine.rootContext()->setContextProperty("hardwareStatusModel", new HardwareStatusModel(this));
     engine.rootContext()->setContextProperty("wifiMonitor", new WifiMonitor(this));
+    engine.rootContext()->setContextProperty("wifiOptimizer", new WifiOptimizer(this));
 
     // ✅ QML 파일 로드
     QUrl qmlUrl = QUrl::fromLocalFile("D:/qtprojects/HMI_sample/Main.qml");

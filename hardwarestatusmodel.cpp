@@ -1,5 +1,10 @@
 #include "hardwarestatusmodel.h"
 #include <QDebug>
+
+#ifdef _WIN32
+#include <winsock2.h>  // 반드시 windows.h 보다 먼저!
+#endif
+
 #include <windows.h>
 
 #ifdef Q_OS_WIN

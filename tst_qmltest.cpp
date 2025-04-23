@@ -14,6 +14,7 @@ int main(int argc, char *argv[]) {
 
     // ✅ reference_wrapper를 사용하여 안전한 벡터 저장
     //std::vector<std::reference_wrapper<QObject>> tests = { qmlTest, fileTest };
+    //std::vector<std::reference_wrapper<QObject>> tests = { qmlTest };
     std::vector<std::reference_wrapper<QObject>> tests = { fileTest };
 
     // ✅ 모든 테스트 실행 (하나라도 실패하면 1 반환)

@@ -119,31 +119,48 @@ ApplicationWindow {
                 Button {
                     text: "Download from URL"
                     width: parent.width
-                    onClicked: osFileManager.downloadFromUrl("https://example.com/file.txt", "D:/test_local.txt")
+                    onClicked: {
+                        osFileManager.downloadFromUrl("https://example.com/file.txt", "D:/test_local.txt")
+                    }
                 }
 
                 Button {
                     text: "Upload to URL"
                     width: parent.width
-                    onClicked: osFileManager.uploadToUrl("D:/test_local.txt", "https://example.com/upload")
+                    onClicked: {
+                        osFileManager.uploadToUrl("D:/test_local.txt", "https://example.com/upload")
+                    }
                 }
 
                 Button {
                     text: "Copy from USB"
                     objectName: "copyFromUsbButton"
                     width: parent.width
-                    onClicked: osFileManager.copyFromUsb("E:/test.zip", "D:/test.zip")
+                    onClicked: {
+                        console.log("copy from usb button clicked");
+                        osFileManager.copyFromUsb("E:/test_usb.txt", "D:/test_usb.txt")
+                    }
+                }
+
+                Button {
+                    text: "Copy to USB"
+                    objectName: "copyToUsbButton"
+                    width: parent.width
+                    onClicked: {
+                        console.log("copy to usb button clicked");
+                        osFileManager.copyToUsb("D:/test_local.txt", "E:/test_local.txt")
+                    }
                 }
 
                 // ✅ 진행률 바 (다운로드 & 복사 공용)
                 Item {
                     width: parent.width
-                    height: 10
+                    height: parent.height
 
-                    ProgressBar {
+                    ProgressBar {                        
                         id: progressBar
                         width: parent.width
-                        height: parent.height
+                        height: 20
                         from: 0
                         to: 100
                         value: progressValue
@@ -166,13 +183,6 @@ ApplicationWindow {
                             }
                         }
                     }
-                }
-
-                Button {
-                    text: "Copy to USB"
-                    objectName: "copyToUsbButton"
-                    width: parent.width
-                    onClicked: osFileManager.copyToUsb("D:/test.zip", "E:/test.zip")
                 }
             }
         }

@@ -1,6 +1,10 @@
 #ifndef WIFI_OPTIMIZER_H
 #define WIFI_OPTIMIZER_H
 
+#ifdef _WIN32
+#include <winsock2.h>  // 반드시 windows.h 보다 먼저!
+#endif
+
 #include <QObject>
 #include <QVector>
 #include <QString>
@@ -11,7 +15,6 @@
 #include "LibuvFileExporter.h"
 #include <QFuture>
 #include <QFutureWatcher>
-#include <QtConcurrent>
 
 class WifiOptimizer : public QObject
 {

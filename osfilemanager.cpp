@@ -151,14 +151,16 @@ void OsFileManager::copyToUsb(const QString &localPath, const QString &usbPath) 
 
             connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                     this, [=](int exitCode, QProcess::ExitStatus) {
+                        logger.log("[DEBUG] connected to QProcess::finished for upload");
                         if (exitCode <= 7) {
                             emit progressChanged(100);
-                            emit downloadCompleted(usbPath);
+                            emit uploadCompleted(usbPath);
                             logger.log("[INFO] robocopy finished successfully. File copied to: " + usbPath);
                         } else {
                             emit errorOccurred("robocopy failed. Exit code: " + QString::number(exitCode));
                             logger.log("[ERROR] robocopy failed. Exit code: " + QString::number(exitCode));
                         }
+
                         process->deleteLater();
                     });
 
@@ -236,3 +238,19 @@ void OsFileManager::handleDownloadFinished(int exitCode, QProcess::ExitStatus ex
 void OsFileManager::cancelCopy() { cancelRequested = true; }
 void OsFileManager::cancelDownload() { if (downloadInProgress) downloadProcess->terminate(); }
 bool OsFileManager::isDownloadInProgress() { return downloadInProgress; }
+
+// ✅ USB 드라이브 확인
+bool OsFileManager::isUsbConnected() const {
+#ifdef Q_OS_WIN
+    const QString usbRoot = "E:/";
+#else
+    const QString usbRoot = "/media/usb";
+#endif
+
+    QFileInfo usbDir(usbRoot);
+    bool exists = usbDir.exists() && usbDir.isDir();
+
+    qDebug() << "[USB CHECK] Path:" << usbRoot << " Exists:" << exists;
+    return exists;
+}
+

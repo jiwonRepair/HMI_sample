@@ -1,5 +1,8 @@
 #ifndef WIFIMONITOR_H
 #define WIFIMONITOR_H
+#ifdef _WIN32
+#include <winsock2.h>  // 반드시 windows.h 보다 먼저!
+#endif
 
 #include <QObject>
 #include <windows.h>

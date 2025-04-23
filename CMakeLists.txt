@@ -84,10 +84,13 @@ add_executable(tst_qmltest
     testosfilemanager.h testosfilemanager.cpp
     osfilemanager.h osfilemanager.cpp
     LoggingDecorator.h LoggingDecorator.cpp
+    wifioptimizer.h wifioptimizer.cpp
+    LibuvFileExporter.h LibuvFileExporter.cpp  # ✅ 이 두 줄 추가 필요
 )
 
 # ✅ 테스트 실행 파일에 Qt 라이브러리 추가
-target_link_libraries(tst_qmltest PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Test)
+target_link_libraries(tst_qmltest PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Test Qt6::Concurrent ${LIBUV_LIBRARIES})
+target_include_directories(tst_qmltest PRIVATE ${LIBUV_INCLUDE_DIRS})
 
 # ✅ Windows 시스템 라이브러리 추가 (🚀 오류 해결)
 if(WIN32)

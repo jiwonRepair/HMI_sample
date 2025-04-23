@@ -33,6 +33,8 @@ public:
     Q_INVOKABLE void cancelDownload();
     Q_INVOKABLE bool isDownloadInProgress();
 
+    bool isUsbConnected() const;
+
 signals:
     void progressChanged(int progress);
     void downloadCompleted(const QString &savePath);
