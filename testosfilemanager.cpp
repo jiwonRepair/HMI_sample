@@ -18,6 +18,9 @@
 #include "wifioptimizer.h"
 #include "LoggingDecorator.h"
 
+#define LOCAL_TEST_FILE_PATH = "D:/test_local.txt";
+#define USB_TEST_FILE_PATH = "E:/test_usb.txt";
+
 // ✅ 클릭 후 시그널 대기 도우미 함수
 void TestOsFileManager::clickButtonAndWaitForSignal(const QString &buttonId, QSignalSpy &spy, int timeout)
 {
@@ -56,13 +59,9 @@ void TestOsFileManager::clickPopupClose()
 // ✅ 1. 테스트 시작 시 초기화
 void TestOsFileManager::initTestCase() {
 // 테스트 파일 경로 설정 (USB 드라이브가 /media/usb 또는 D:/usb로 마운트된다고 가정)
-#ifdef Q_OS_WIN
-    usbTestFilePath = "E:/test_usb.txt";
-    localTestFilePath = "D:/test_local.txt";
-#else
-    usbTestFilePath = "/media/usb/test_usb.txt";
-    localTestFilePath = "/home/user/temp/test_local.txt";
-#endif
+
+    OsFileManager osFileManager;
+    QVERIFY(osFileManager.isUsbConnected()); //USB E drive가 존재하는지 확인
 
     // USB에 테스트용 파일 생성
     QFile usbTestFile1(usbTestFilePath);

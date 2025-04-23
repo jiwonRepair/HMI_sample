@@ -24,6 +24,11 @@ OsFileManager::OsFileManager(QObject *parent) : QObject(parent), cancelRequested
 void OsFileManager::copyFromUsb(const QString &usbPath, const QString &destinationPath, bool convertToUtf16) {
     logger.execute([=]() {
         try {
+            if (!isUsbConnected()){
+                emit errorOccurred("USB drive does not exist.");
+                return;
+            }
+
             if (!QFileInfo::exists(usbPath)) {
                 emit errorOccurred("Source file does not exist.");
                 logger.log("ERROR: Source file does not exist: " + usbPath);
@@ -102,6 +107,11 @@ void OsFileManager::copyFromUsb(const QString &usbPath, const QString &destinati
 void OsFileManager::copyToUsb(const QString &localPath, const QString &usbPath) {
     logger.execute([=]() {
         try {
+            if (!isUsbConnected()){
+                emit errorOccurred("USB drive does not exist.");
+                return;
+            }
+
             if (!QFileInfo::exists(localPath)) {
                 emit errorOccurred("Source file does not exist.");
                 logger.log("ERROR: Source file does not exist: " + localPath);
