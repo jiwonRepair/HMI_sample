@@ -138,7 +138,7 @@ ApplicationWindow {
                     width: parent.width
                     onClicked: {
                         console.log("copy from usb button clicked");
-                        osFileManager.copyFromUsb("E:/test_usb.txt", "D:/test_usb.txt")
+                        osFileManager.copyFromUsb("E:/test.zip", "D:/test.zip")
                     }
                 }
 
@@ -148,7 +148,7 @@ ApplicationWindow {
                     width: parent.width
                     onClicked: {
                         console.log("copy to usb button clicked");
-                        osFileManager.copyToUsb("D:/test_local.txt", "E:/test_local.txt")
+                        osFileManager.copyToUsb("D:/test.zip", "E:/test.zip")
                     }
                 }
 
@@ -172,9 +172,18 @@ ApplicationWindow {
                             Rectangle {
                                 width: progressBar.visualPosition * progressBar.width
                                 height: progressBar.height
-                                color: progressValue < 100 ? "green" : "white" // ✅ 진행 중일 때 초록색, 완료 시 흰색
+                                //color: progressValue < 100 ? "green" : "white" // ✅ 진행 중일 때 초록색, 완료 시 흰색
                                 radius: 5
+
+                                // ✅ 색상 변경 없이 일정하게 유지 + 애니메이션 부드럽게
+                                color: "green"
+
+                                Behavior on width {
+                                    NumberAnimation { duration: 150 }
+                                }
+
                             }
+
                             Text {
                                 text: progressValue + "%"
                                 anchors.centerIn: parent
@@ -182,6 +191,16 @@ ApplicationWindow {
                                 color: "black"
                             }
                         }
+                    }
+
+                    // ✅ 반드시 ProgressBar와 같은 부모 안에서 정의해야 target: progressBar 인식됨
+                    PropertyAnimation {
+                        id: progressFade
+                        target: progressBar
+                        property: "opacity"
+                        to: 0
+                        duration: 500
+                        onStopped: progressBar.visible = false
                     }
                 }
             }
@@ -285,12 +304,68 @@ ApplicationWindow {
             }
         }
 
+        // Connections {
+        //     target: osFileManager
+
+        //     function onProgressChanged(progress) {
+        //         progressValue = progress
+        //         //console.log("진행률:", progress)
+        //     }
+
+        //     function onDownloadStarted() {
+        //         progressBar.visible = true
+        //         progressBar.opacity = 1
+        //         progressValue = 0      // ✅ 다운로드 시 초기화
+        //     }
+
+        //     function onUploadStarted() {
+        //         progressBar.visible = true
+        //         progressBar.opacity = 1
+        //         progressValue = 0      // ✅ 다운로드 시 초기화
+        //     }
+
+        //     function onDownloadCompleted(savePath) {
+        //         progressValue = 100
+        //         popupTitle = "✅ 다운로드 완료"
+        //         popupMessage = "파일이 정상적으로 다운로드되었습니다."
+        //         popupImage = "qrc:/images/download.png"
+        //         myPopup.visible = true
+        //     }
+
+        //     function onUploadCompleted(filePath) {
+        //         progressValue = 100
+        //         popupTitle = "✅ 업로드 완료"
+        //         popupMessage = "파일이 정상적으로 업로드되었습니다."
+        //         popupImage = "qrc:/images/download.png"
+        //         myPopup.visible = true
+        //     }
+
+        //     function onErrorOccurred(error) {
+        //         popupTitle = "❌ 오류 발생"
+        //         popupMessage = "오류 메시지: " + error
+        //         console.log("FileManager ERROR : " + error)
+        //         popupImage = "qrc:/images/error.png"
+        //         myPopup.visible = true
+        //     }
+        // }
+
         Connections {
             target: osFileManager
 
+            function onUploadStarted() {
+                progressValue = 0;
+                progressBar.visible = true;
+                progressBar.opacity = 1;
+            }
+
+            function onDownloadStarted() {
+                progressValue = 0;
+                progressBar.visible = true;
+                progressBar.opacity = 1;
+            }
+
             function onProgressChanged(progress) {
-                progressValue = progress
-                //console.log("진행률:", progress)
+                progressValue = progress;
             }
 
             function onDownloadCompleted(savePath) {
@@ -317,5 +392,6 @@ ApplicationWindow {
                 myPopup.visible = true
             }
         }
+
     }
 }
