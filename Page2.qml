@@ -85,58 +85,58 @@ Item {
                     onClicked: booster.exportSignalHistoryToFile()
                 }
 
-                Item {
-                    width: parent.width
-                    height: parent.height
+                // Item {
+                //     width: parent.width
+                //     height: parent.height
 
-                    property int progressValue: 0
+                //     property int progressValue: 0
 
-                    Connections {
-                        target: wifiOptimizer
+                //     Connections {
+                //         target: wifiOptimizer
 
-                        function onProgressChanged(p) {
-                            progressValue = p
-                        }
+                //         function onProgressChanged(p) {
+                //             progressValue = p
+                //         }
 
-                        function onSaveFinished() {
-                            console.log("✅ 저장 완료")
-                            progressValue = 100
-                        }
+                //         function onSaveFinished() {
+                //             console.log("✅ 저장 완료")
+                //             progressValue = 100
+                //         }
 
-                        function onSaveCancelled() {
-                            console.log("🛑 저장이 취소되었습니다")
-                        }
-                    }
+                //         function onSaveCancelled() {
+                //             console.log("🛑 저장이 취소되었습니다")
+                //         }
+                //     }
 
-                    ProgressBar {
-                        id: progressBar
-                        width: parent.width
-                        height: 20
-                        from: 0
-                        to: 100
-                        value: progressValue
+                    // ProgressBar {
+                    //     id: progressBar
+                    //     width: parent.width
+                    //     height: 20
+                    //     from: 0
+                    //     to: 100
+                    //     value: progressValue
 
-                        background: Rectangle {
-                            color: "lightgray"
-                            radius: 5
-                        }
+                    //     background: Rectangle {
+                    //         color: "lightgray"
+                    //         radius: 5
+                    //     }
 
-                        contentItem: Item {
-                            Rectangle {
-                                width: progressBar.visualPosition * progressBar.width
-                                height: progressBar.height
-                                color: progressValue < 100 ? "green" : "white"
-                                radius: 5
-                            }
-                            Text {
-                                text: progressValue + "%"
-                                anchors.centerIn: parent
-                                font.bold: true
-                                color: "black"
-                            }
-                        }
-                    }
-                }
+                    //     contentItem: Item {
+                    //         Rectangle {
+                    //             width: progressBar.visualPosition * progressBar.width
+                    //             height: progressBar.height
+                    //             color: progressValue < 100 ? "green" : "white"
+                    //             radius: 5
+                    //         }
+                    //         Text {
+                    //             text: progressValue + "%"
+                    //             anchors.centerIn: parent
+                    //             font.bold: true
+                    //             color: "black"
+                    //         }
+                    //     }
+                    // }
+                //}
             }
 
         }

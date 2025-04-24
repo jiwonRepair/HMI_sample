@@ -27,182 +27,14 @@ OsFileManager::OsFileManager(QObject *parent) : QObject(parent), cancelRequested
 
 }
 
-// ✅ USB → 로컬 복사 (`copyFromUsb`)
-// void OsFileManager::copyFromUsb(const QString &usbPath, const QString &destinationPath, bool convertToUtf16) {
-//     logger.execute([=]() {
-//         try {
-//             if (!isUsbConnected()){
-//                 emit errorOccurred("USB drive does not exist.");
-//                 return;
-//             }
-
-//             emit downloadStarted();  // ✅ USB → 로컬도 다운로드 시그널
-
-//             if (!QFileInfo::exists(usbPath)) {
-//                 emit errorOccurred("Source file does not exist.");
-//                 logger.log("ERROR: Source file does not exist: " + usbPath);
-//                 return;
-//             }
-
-//             QString sourceDir = QFileInfo(usbPath).absolutePath();
-//             QString fileName = QFileInfo(usbPath).fileName();
-//             QString destDir = QFileInfo(destinationPath).absolutePath();
-
-//             QDir().mkpath(destDir); // 대상 폴더 없으면 생성
-
-//             QProcess *process = new QProcess(this);
-
-//             QStringList args;
-//             args << fileName
-//                  << "/bytes" << "/r:0" << "/w:0"
-//                  << "/tee";  // 🔥 실시간 출력 강제
-
-//             args.prepend(QDir::toNativeSeparators(destDir));   // 대상
-//             args.prepend(QDir::toNativeSeparators(sourceDir)); // 원본
-//             args.prepend("robocopy");
-
-//             QString command = args.join(" ");
-//             logger.log("[INFO] Starting robocopy: " + command);
-
-//             // ✅ stdout 진행률 파싱
-//             connect(process, &QProcess::readyReadStandardOutput, this, [=]() {
-//                 QString stdOut = process->readAllStandardOutput();
-//                 logger.log("[robocopy stdout]\n" + stdOut);
-
-//                 static const QRegularExpression percentRegex(R"((\d+\.\d+)%|\d+%)");
-//                 const auto lines = stdOut.split('\n');
-//                 for (const QString &line : lines) {
-//                     QRegularExpressionMatch match = percentRegex.match(line.trimmed());
-//                     if (match.hasMatch()) {
-//                         QString percentText = match.captured(0);
-//                         int dotIndex = percentText.indexOf('.');
-//                         int percent = dotIndex > 0
-//                                           ? QStringView(percentText).left(dotIndex).toInt()
-//                                           : percentText.remove('%').toInt();
-//                         emit progressChanged(percent);
-//                         //logger.log(QString("[progress] %1%").arg(percent));
-//                     }
-//                 }
-//             });
-
-//             // ✅ 복사 완료 시 처리
-//             connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-//                     this, [=](int exitCode, QProcess::ExitStatus) {
-//                         if (exitCode <= 7) {
-//                             emit progressChanged(100);
-//                             emit downloadCompleted(destinationPath);
-//                             logger.log("[INFO] robocopy finished successfully. File copied to: " + destinationPath);
-//                         } else {
-//                             emit errorOccurred("robocopy failed. Exit code: " + QString::number(exitCode));
-//                             logger.log("[ERROR] robocopy failed. Exit code: " + QString::number(exitCode));
-//                         }
-//                         process->deleteLater();
-//                     });
-
-//             process->start("cmd.exe", QStringList() << "/c" << command);
-
-//         } catch (const std::exception &e) {
-//             emit errorOccurred(e.what());
-//             logger.log("[EXCEPTION] " + QString::fromUtf8(e.what()));
-//         } catch (...) {
-//             emit errorOccurred("Unknown error occurred during copy.");
-//             logger.log("[EXCEPTION] Unknown error occurred during copy.");
-//         }
-//     });
-// }
-
 void OsFileManager::copyFromUsb(const QString &usbPath, const QString &localPath, bool convertToUtf16) {
     if (!isUsbConnected()) {
         emit errorOccurred("USB drive does not exist.");
         return;
     }
 
-    emit downloadStarted();  // ✅ 다운로드 시작 알림
     copyFile(usbPath, localPath, false);
 }
-
-// ✅ 로컬 → USB 복사 (`copyToUsb`)
-// void OsFileManager::copyToUsb(const QString &localPath, const QString &usbPath) {
-//     logger.execute([=]() {
-//         try {
-//             if (!isUsbConnected()){
-//                 emit errorOccurred("USB drive does not exist.");
-//                 return;
-//             }
-
-//             if (!QFileInfo::exists(localPath)) {
-//                 emit errorOccurred("Source file does not exist.");
-//                 logger.log("ERROR: Source file does not exist: " + localPath);
-//                 return;
-//             }
-
-//             QString sourceDir = QFileInfo(localPath).absolutePath();
-//             QString fileName = QFileInfo(localPath).fileName();
-//             QString destDir = QFileInfo(usbPath).absolutePath();
-
-//             QDir().mkpath(destDir); // 대상 폴더 없으면 생성
-
-//             QProcess *process = new QProcess(this);
-
-//             QStringList args;
-//             args << fileName
-//                  << "/bytes" << "/r:0" << "/w:0"
-//                  << "/tee";  // 🔥 실시간 진행률 출력
-
-//             args.prepend(QDir::toNativeSeparators(destDir));   // 대상
-//             args.prepend(QDir::toNativeSeparators(sourceDir)); // 원본
-//             args.prepend("robocopy");
-
-//             QString command = args.join(" ");
-//             logger.log("[INFO] Starting robocopy: " + command);
-
-//             // ✅ stdout 진행률 파싱
-//             connect(process, &QProcess::readyReadStandardOutput, this, [=]() {
-//                 QString stdOut = process->readAllStandardOutput();
-//                 logger.log("[robocopy stdout]\n" + stdOut);
-
-//                 static const QRegularExpression percentRegex(R"((\d+\.\d+)%|\d+%)");
-//                 const auto lines = stdOut.split('\n');
-//                 for (const QString &line : lines) {
-//                     QRegularExpressionMatch match = percentRegex.match(line.trimmed());
-//                     if (match.hasMatch()) {
-//                         QString percentText = match.captured(0);
-//                         int dotIndex = percentText.indexOf('.');
-//                         int percent = dotIndex > 0
-//                                           ? QStringView(percentText).left(dotIndex).toInt()
-//                                           : percentText.remove('%').toInt();
-//                         emit progressChanged(percent);
-//                         //logger.log(QString("[progress] %1%").arg(percent));
-//                     }
-//                 }
-//             });
-
-//             connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-//                     this, [=](int exitCode, QProcess::ExitStatus) {
-//                         logger.log("[DEBUG] connected to QProcess::finished for upload");
-//                         if (exitCode <= 7) {
-//                             emit progressChanged(100); // UI 리셋 타이밍 뒤로 밀기
-//                             emit uploadCompleted(usbPath);
-//                             logger.log("[INFO] robocopy finished successfully. File copied to: " + usbPath);
-//                         } else {
-//                             emit errorOccurred("robocopy failed. Exit code: " + QString::number(exitCode));
-//                             logger.log("[ERROR] robocopy failed. Exit code: " + QString::number(exitCode));
-//                         }
-
-//                         process->deleteLater();
-//                     });
-
-//             process->start("cmd.exe", QStringList() << "/c" << command);
-
-//         } catch (const std::exception &e) {
-//             emit errorOccurred(e.what());
-//             logger.log("[EXCEPTION] " + QString::fromUtf8(e.what()));
-//         } catch (...) {
-//             emit errorOccurred("Unknown error occurred during copy.");
-//             logger.log("[EXCEPTION] Unknown error occurred during copy.");
-//         }
-//     });
-// }
 
 void OsFileManager::copyToUsb(const QString &localPath, const QString &usbPath) {
     if (!isUsbConnected()) {
@@ -210,7 +42,6 @@ void OsFileManager::copyToUsb(const QString &localPath, const QString &usbPath) 
         return;
     }
 
-    emit uploadStarted();  // ✅ 업로드 시작 알림
     copyFile(localPath, usbPath, true);
 }
 
@@ -232,7 +63,9 @@ void OsFileManager::copyFile(const QString &sourcePath, const QString &destPath,
             QProcess *process = new QProcess(this);
 
             QStringList args;
-            args << fileName << "/bytes" << "/r:0" << "/w:0" << "/tee";
+            args << fileName << "/bytes"
+                             << "/r:0" << "/w:0" << "/tee"
+                             << "/IS" << "/IT";  // 덮어쓰기 강제
             args.prepend(QDir::toNativeSeparators(destDir));
             args.prepend(QDir::toNativeSeparators(sourceDir));
             args.prepend("robocopy");
@@ -270,8 +103,6 @@ void OsFileManager::downloadFromUrl(const QString &url, const QString &savePath)
             if (downloadInProgress) {
                 throw std::runtime_error("A download is already in progress.");
             }
-
-            emit downloadStarted();  // ✅ 다운로드 시작 알림
 
             downloadInProgress = true;
             QString command = QString("curl -L --progress-bar -o \"%1\" \"%2\"").arg(savePath, url);
@@ -331,11 +162,12 @@ void OsFileManager::handleGenericFinished(int exitCode,
     }
 
     if (exitCode <= 7 && status == QProcess::NormalExit) {
-        emit progressChanged(100);
-        if (isUpload)
+        if (isUpload){
             emit uploadCompleted(path);
-        else
+        }
+        else{
             emit downloadCompleted(path);
+        }
         logger.log("[INFO] robocopy finished successfully. File copied to: " + path);
     } else {
         emit errorOccurred((isUpload ? "Upload" : "Download") + QString(" failed. Exit code: %1").arg(exitCode));
@@ -347,20 +179,21 @@ void OsFileManager::handleGenericFinished(int exitCode,
 }
 
 void OsFileManager::parseProgressFromOutput(const QString &stdOut) {
-    static const QRegularExpression percentRegex(R"((\d+\.\d+)%|\d+%)");
-    const auto lines = stdOut.split('\n');
-    for (const QString &line : lines) {
-        QRegularExpressionMatch match = percentRegex.match(line.trimmed());
+    static const QRegularExpression percentRegex(R"((\d{1,3})(?:\.\d+)?%)");
+    static const QRegularExpression lineBreakRegex(R"(\r|\n)");  // ✅ 여기 추가
+
+    QStringList segments = stdOut.split(lineBreakRegex, Qt::SkipEmptyParts);  // ✅ static 사용
+
+    for (int i = 0; i < segments.size(); ++i) {
+        QString segment = segments.at(i).trimmed();  // 복사 발생하지만 안전하게 처리
+        QRegularExpressionMatch match = percentRegex.match(segment.trimmed());
         if (match.hasMatch()) {
-            QString percentText = match.captured(0);
-            int dotIndex = percentText.indexOf('.');
-            int percent = dotIndex > 0
-                              ? QStringView(percentText).left(dotIndex).toInt()
-                              : percentText.remove('%').toInt();
-            // ✅ 중복 emit 방지
-            if (percent != lastProgress) {
+            bool ok = false;
+            int percent = match.captured(1).toInt(&ok);
+            if (ok && percent >= lastProgress && percent <= 100) {//if (ok && percent != lastProgress && percent < 100) {//if (ok && percent != lastProgress) {
                 lastProgress = percent;
                 emit progressChanged(percent);
+                qDebug() << "[PROGRESS]" << percent << "%";
             }
         }
     }
