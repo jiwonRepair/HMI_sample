@@ -7,6 +7,7 @@ set(LIBUV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/installed/x64-windows/
 set(LIBUV_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/installed/x64-windows/lib/uv.lib")
 
 
+
 # ✅ Qt 라이브러리 찾기 (Gui, Qml, Quick 추가)
 find_package(Qt6 REQUIRED COMPONENTS Gui Qml Quick Test Core Concurrent)
 
@@ -27,6 +28,12 @@ set(QML_FILES
     HWstatus.qml
     graph.qml
 )
+
+
+foreach(qml_file ${QML_FILES})
+    configure_file(${qml_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${qml_file} COPYONLY)
+endforeach()
+
 
 # ✅ 애플리케이션 실행 파일 추가
 qt_add_executable(apptest4
@@ -94,7 +101,7 @@ target_include_directories(tst_qmltest PRIVATE ${LIBUV_INCLUDE_DIRS})
 
 # ✅ Windows 시스템 라이브러리 추가 (🚀 오류 해결)
 if(WIN32)
-    set(MT_EXE "C:/Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/mt.exe")
+    set(MT_EXE "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/mt.exe")
 
     add_custom_command(TARGET apptest4 POST_BUILD
         COMMAND "${MT_EXE}"

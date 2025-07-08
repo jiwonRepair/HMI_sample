@@ -119,7 +119,10 @@ void TestOsFileManager::setUp()
 
     // ✅ 예외 발생 시 안전한 QML 로딩
     logger.execute([&]() {
-        engine.load(QUrl::fromLocalFile("D:/qtprojects/HMI_sample/Main.qml"));
+        //engine.load(QUrl::fromLocalFile("D:/qtprojects/HMI_sample/Main.qml"));
+        QString qmlPath = QCoreApplication::applicationDirPath() + "/Main.qml";
+        engine.load(QUrl::fromLocalFile(qmlPath));
+
     });
 
     engine.load(QUrl::fromLocalFile("D:/qtprojects/HMI_sample/Main.qml"));

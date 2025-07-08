@@ -37,8 +37,11 @@ void QmlTest::setUp()
     engine.rootContext()->setContextProperty("wifiOptimizer", new WifiOptimizer(this));
 
     // ✅ QML 파일 로드
-    QUrl qmlUrl = QUrl::fromLocalFile("D:/qtprojects/HMI_sample/Main.qml");
-    engine.load(qmlUrl);
+    //QUrl qmlUrl = QUrl::fromLocalFile("D:/qtprojects/HMI_sample/Main.qml");
+    //engine.load(qmlUrl);
+    QString qmlPath = QCoreApplication::applicationDirPath() + "/Main.qml";
+    engine.load(QUrl::fromLocalFile(qmlPath));
+
     QTest::qWait(1000);
 
     // ✅ QML이 정상적으로 로드되었는지 확인
